@@ -12,7 +12,6 @@ exports.handle405 = (req, res, next) => {
 
 exports.handleFirebase_Error = (err, req, res, next) => {
   const { code } = err;
-  //console.log(err);
   const codes = {
     "auth/wrong-password": {
       status: 400,
@@ -36,6 +35,7 @@ exports.handleFirebase_Error = (err, req, res, next) => {
     const { status, message } = codes[err.code];
     res.status(status).send({ message });
   } else {
+    console.log(err);
     next(err);
   }
 };

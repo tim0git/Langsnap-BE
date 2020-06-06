@@ -6,7 +6,7 @@ exports.createNewUser = (req, res, next) => {
     .auth()
     .createUserWithEmailAndPassword(email, password)
     .then((result) => {
-      res.status(200).send({ result: result });
+      res.status(201).send({ result: result });
     })
     .catch(({ code, message }) => {
       next({ code: code, message: message });

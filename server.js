@@ -11,7 +11,10 @@ const cors = require("cors"); //  'This is CORS-enabled for all origins!'
 //Firebase Auth Connection, required in all firebase optins for test purposes only.
 const { firebaseConfig } = require("./config/configDB");
 const firebase = require("firebase");
-firebase.initializeApp(firebaseConfig);
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 
 //initialise express app
 const app = express();
@@ -32,8 +35,8 @@ app.use(handleFirebase_Error);
 //depolyment port and test dev port
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`server started on port: ${PORT}`);
 });
 
-module.exports = app;
+module.exports = { app, server };
