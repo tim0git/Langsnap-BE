@@ -8,4 +8,3 @@ exports.firebaseConfig = {
   appId: "1:180396887664:web:1082b4e38c8d8f4199eeb5",
   measurementId: "G-KZ2G9NT4LP",
 };
-
