@@ -1,15 +1,6 @@
 const firebase = require("firebase");
 const admin = require("firebase-admin");
 
-//admin account to enable token creation
-const serviceAccount = require("../config/pointtranslate-da844-firebase-adminsdk-prgku-17a5c09beb.json");
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://pointtranslate-da844.firebaseio.com",
-  });
-}
-
 //sign user in. FireBase Auth.
 exports.signinUser = (req, res, next) => {
   const { password, email } = req.body;
@@ -22,6 +13,7 @@ exports.signinUser = (req, res, next) => {
         .createCustomToken(uid)
         .then(function (customToken) {
           //console.log(customToken);
+          // either send back the profile or have a onChange event on the front end that listens for a change in the token and then fetches the profile associated with it?
           res.status(200).send({ token: customToken });
         });
     })
@@ -30,7 +22,7 @@ exports.signinUser = (req, res, next) => {
     });
 }; //done no further work required
 
-// not yet linked to a route. will be auth checker for private routes...
+// Tested and working auth checker,
 exports.auth = async (req, res, next) => {
   const token = req.header("token");
   if (!token) {
@@ -44,4 +36,4 @@ exports.auth = async (req, res, next) => {
   } catch (err) {
     res.status(401).send({ message: "token is not valid" });
   }
-}; // done must decided if we are checking with uid or email on next() routes. ***
+}; // done, must decided if we are checking with uid or email on next() routes. ***

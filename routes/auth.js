@@ -8,7 +8,7 @@ authRouter.route("/").get((req, res) => {
 //signIn user
 authRouter.route("/").post(signinUser);
 
-//signIn user
+//test if auth works on private routes
 authRouter.route("/test").get(auth, (req, res) => {
   res.status(200).send({ message: req.email });
 });

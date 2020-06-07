@@ -13,7 +13,18 @@ const { firebaseConfig } = require("./config/configFirebase");
 const firebase = require("firebase");
 
 if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
+  const appFirebase = firebase.initializeApp(firebaseConfig);
+}
+
+const admin = require("firebase-admin");
+
+//admin account to enable token creation
+const serviceAccount = require("./config/pointtranslate-da844-firebase-adminsdk-prgku-17a5c09beb.json");
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://pointtranslate-da844.firebaseio.com",
+  });
 }
 
 //initialise express app

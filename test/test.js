@@ -2,6 +2,7 @@ const firebase = require("firebase");
 const admin = require("firebase-admin");
 const { app, server } = require("../server");
 const request = require("supertest");
+const { testUsers } = require("../config/passwords");
 
 //Chai config,
 const expect = require("chai").expect;
@@ -20,36 +21,6 @@ describe("GET /api", () => {
         expect(res.body).to.contain.property("message");
         expect(res.body.message).to.be.a("string");
         expect(res.body.message).to.equal("working GET /api");
-        done();
-      })
-      .catch((err) => done(err));
-  });
-});
-
-//test create a new user. FireBase Auth.
-describe("POST /api/user", () => {
-  after(function (done) {
-    let user = firebase.auth().currentUser;
-    user.delete().catch(function (error) {
-      console.log(error);
-    });
-    server.close();
-    done();
-  });
-
-  it("should create a user when passed an email address and password", (done) => {
-    request(app)
-      .post("/api/user")
-      .send({
-        password: "1234567",
-        email: "test@icloud.com",
-      })
-      .expect(201)
-      .then((res) => {
-        expect(res.body).to.have.all.keys("user", "token");
-        expect(res.body.user).to.contain.property("user");
-        expect(res.body.user.user.email).to.be.a("string");
-        expect(res.body.user.user.email).to.equal("test@icloud.com");
         done();
       })
       .catch((err) => done(err));
@@ -182,15 +153,7 @@ describe("POST /api/auth", () => {
     done();
   });
   before(function (done) {
-    const serviceAccount = require("../config/pointtranslate-da844-firebase-adminsdk-prgku-17a5c09beb.json");
-    const email = "testAsync@gmail.com";
-    const password = "1234567";
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://pointtranslate-da844.firebaseio.com",
-      });
-    }
+    const { password, email } = testUsers;
     firebase
       .auth()
       .signInWithEmailAndPassword(email, password)
@@ -220,5 +183,50 @@ describe("POST /api/auth", () => {
       .catch((err) => {
         done(err);
       });
+  });
+});
+
+//test create a new user. FireBase Auth.
+describe("POST /api/user", () => {
+  after((done) => {
+    const password = "1234567";
+    const email = "test@icloud.com";
+    //ensure user is logged in...
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then((res) => {
+        const { uid } = res.user;
+        //assign loggedin user to current user
+        const user = firebase.auth().currentUser;
+        //delete current user
+        user.delete().catch(function (error) {
+          done(error);
+          // delete from realtimeDB
+        });
+        const database = admin.database();
+        const usersRef = database.ref("/users/" + uid);
+        usersRef.remove();
+      });
+    server.close();
+    done();
+  });
+  it("should create a user when passed an email address and password", (done) => {
+    request(app)
+      .post("/api/user")
+      .send({
+        name: "testuser1",
+        password: "1234567",
+        email: "test@icloud.com",
+      })
+      .expect(201)
+      .then((res) => {
+        expect(res.body).to.have.all.keys("user", "token");
+        expect(res.body.user).to.have.all.keys("name", "email");
+        expect(res.body.user.email).to.be.a("string");
+        expect(res.body.user.email).to.equal("test@icloud.com");
+        done();
+      })
+      .catch((err) => done(err));
   });
 });
