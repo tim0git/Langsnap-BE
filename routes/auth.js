@@ -1,5 +1,5 @@
 const authRouter = require("express").Router();
-const { signinUser } = require("../controller/auth");
+const { signinUser, auth } = require("../controller/auth");
 
 authRouter.route("/").get((req, res) => {
   res.send({ message: "working GET /api/auth" });
@@ -7,5 +7,10 @@ authRouter.route("/").get((req, res) => {
 
 //signIn user
 authRouter.route("/").post(signinUser);
+
+//signIn user
+authRouter.route("/test").get(auth, (req, res) => {
+  res.status(200).send({ message: req.email });
+});
 
 module.exports = { authRouter };

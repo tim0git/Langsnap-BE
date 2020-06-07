@@ -1,4 +1,5 @@
 const firebase = require("firebase");
+const admin = require("firebase-admin");
 const { app, server } = require("../server");
 const request = require("supertest");
 
@@ -45,9 +46,10 @@ describe("POST /api/user", () => {
       })
       .expect(201)
       .then((res) => {
-        expect(res.body.result).to.contain.property("user");
-        expect(res.body.result.user.email).to.be.a("string");
-        expect(res.body.result.user.email).to.equal("test@icloud.com");
+        expect(res.body).to.have.all.keys("user", "token");
+        expect(res.body.user).to.contain.property("user");
+        expect(res.body.user.user.email).to.be.a("string");
+        expect(res.body.user.user.email).to.equal("test@icloud.com");
         done();
       })
       .catch((err) => done(err));
@@ -61,7 +63,7 @@ describe("POST /api/auth", () => {
     done();
   });
 
-  it("responds with logged in user if emai and password are correct", function (done) {
+  it("responds with a token if correct email and password are provided", function (done) {
     request(app)
       .post("/api/auth")
       .send({
@@ -70,10 +72,45 @@ describe("POST /api/auth", () => {
       })
       .expect(200)
       .then((res) => {
-        expect(res.body.result).to.an("object");
-        expect(res.body.result).to.contain.property("user");
-        expect(res.body.result.user.email).to.be.a("string");
-        expect(res.body.result.user.email).to.equal("testperm@icloud.com");
+        expect(res.body.token).to.a("string");
+        expect(res.body).to.contain.property("token");
+        done();
+      })
+      .catch((err) => done(err));
+  });
+  //error checking
+  it("responds with error if incorrect password is provided", function (done) {
+    request(app)
+      .post("/api/auth")
+      .send({
+        password: "123456",
+        email: "testperm@icloud.com",
+      })
+      .expect(400)
+      .then((res) => {
+        expect(res.body.message).to.be.a("string");
+        expect(res.body).to.contain.property("message");
+        expect(res.body.message).to.equal(
+          "The password must be 6 characters long or more."
+        );
+        done();
+      })
+      .catch((err) => done(err));
+  });
+  it("responds with error if incorrect username is provided", function (done) {
+    request(app)
+      .post("/api/auth")
+      .send({
+        password: "1234567",
+        email: "wrong@icloud.co.uk",
+      })
+      .expect(404)
+      .then((res) => {
+        expect(res.body.message).to.be.a("string");
+        expect(res.body).to.contain.property("message");
+        expect(res.body.message).to.equal(
+          "There is no user record corresponding to this identifier. The user may have been deleted."
+        );
         done();
       })
       .catch((err) => done(err));
@@ -106,7 +143,7 @@ describe("GET /api/translate", () => {
   });
 });
 
-// tests association word api call. Responds only with nouns.
+// tests association word api call. Responds with nouns only.
 describe("GET /api/associations", () => {
   after(function (done) {
     server.close();
@@ -134,5 +171,54 @@ describe("GET /api/associations", () => {
         done();
       })
       .catch((err) => done(err));
+  });
+});
+
+// test authorised routes.
+describe("POST /api/auth", () => {
+  let token = "";
+  after(function (done) {
+    server.close();
+    done();
+  });
+  before(function (done) {
+    const serviceAccount = require("../config/pointtranslate-da844-firebase-adminsdk-prgku-17a5c09beb.json");
+    const email = "testAsync@gmail.com";
+    const password = "1234567";
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: "https://pointtranslate-da844.firebaseio.com",
+      });
+    }
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(({ user: { uid } }) => {
+        admin
+          .auth()
+          .createCustomToken(uid)
+          .then(function (customToken) {
+            token = customToken;
+            done();
+          });
+      })
+      .catch((err) => done(err));
+  });
+
+  it("responds with a message on a test auth route", function (done) {
+    request(app)
+      .get("/api/auth/test")
+      .set("token", token)
+      .expect(200)
+      .then((res) => {
+        expect(res.body.message).to.be.a("string");
+        expect(res.body.message).to.equal("testasync@gmail.com");
+        expect(res.body).to.contain.property("message");
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
   });
 });

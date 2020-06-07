@@ -15,7 +15,7 @@ exports.translateWord = (req, res, next) => {
         res.send({ message: translatedText });
       }
     });
-};
+}; //done returns the translated word
 
 //call to word associaton api
 exports.associationsWord = (req, res, next) => {
@@ -35,4 +35,4 @@ exports.associationsWord = (req, res, next) => {
     .catch(({ response: { status, statusText } }) => {
       next({ status: status, message: statusText });
     });
-};
+}; //done return an array of 3 nouns.

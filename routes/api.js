@@ -9,9 +9,9 @@ apiRouter.route("/").get((req, res) => {
   res.send({ message: "working GET /api" });
 });
 
-apiRouter.use("/auth", authRouter);
-apiRouter.use("/user", userRouter);
-apiRouter.use("/translate", translateRouter);
-apiRouter.use("/associations", associationsRouter);
+apiRouter.use("/auth", authRouter); //done
+apiRouter.use("/user", userRouter); 
+apiRouter.use("/translate", translateRouter); //done
+apiRouter.use("/associations", associationsRouter); //done
 
 module.exports = { apiRouter };

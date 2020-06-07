@@ -9,7 +9,7 @@ const { apiRouter } = require("./routes/api");
 const cors = require("cors"); //  'This is CORS-enabled for all origins!'
 
 //Firebase Auth Connection, required in all firebase optins for test purposes only.
-const { firebaseConfig } = require("./config/configDB");
+const { firebaseConfig } = require("./config/configFirebase");
 const firebase = require("firebase");
 
 if (!firebase.apps.length) {
@@ -28,6 +28,7 @@ app.use("/api", apiRouter);
 
 //error handelling.
 app.use(handleFirebase_Error);
+
 app.use(handleCustomError);
 app.use(handleInternalError);
 

@@ -30,9 +30,23 @@ exports.handleFirebase_Error = (err, req, res, next) => {
       status: 400,
       message: "The email address is already in use by another account.",
     },
+    "auth/invalid-api-key": {
+      status: 500,
+      message:
+        "Your API key is invalid, please check you have copied it correctly.",
+    },
+    "auth/quota-exceeded": {
+      status: 400,
+      message: "Exceeded quota for verifying passwords.",
+    },
+    "auth/argument-error": {
+      status: 400,
+      message:
+        'createUserWithEmailAndPassword failed: Second argument "password" must be a valid string.',
+    },
   };
   if (code in codes) {
-    console.log("handled firebase error");
+    //console.log("handled firebase error");
     const { status, message } = codes[err.code];
     res.status(status).send({ message });
   } else {
