@@ -28,9 +28,8 @@ app.use("/api", apiRouter);
 
 //error handelling.
 app.use(handleFirebase_Error);
-
-// app.use(handleCustomError);
-// app.use(handleInternalError);
+app.use(handleCustomError);
+app.use(handleInternalError);
 
 //depolyment port and test dev port
 const PORT = process.env.PORT || 5000;

@@ -32,18 +32,21 @@ exports.handleFirebase_Error = (err, req, res, next) => {
     },
   };
   if (code in codes) {
+    console.log("handled firebase error");
     const { status, message } = codes[err.code];
     res.status(status).send({ message });
   } else {
-    console.log(err);
+    console.log("passed next firebase error");
     next(err);
   }
 };
 
 exports.handleCustomError = (err, req, res, next) => {
   if (err.status) {
+    console.log("handled custom error");
     res.status(err.status).send({ message: err.message });
   } else {
+    console.log("passed next custom error");
     next(err);
   }
 };

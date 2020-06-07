@@ -1,5 +1,6 @@
 const firebase = require("firebase");
 
+//sign user in. FireBase Auth.
 exports.signinUser = (req, res, next) => {
   const { password, email } = req.body;
   firebase

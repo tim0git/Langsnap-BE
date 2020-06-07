@@ -1,5 +1,6 @@
 const firebase = require("firebase");
 
+// create new user. FireBase Auth.
 exports.createNewUser = (req, res, next) => {
   const { password, email } = req.body;
   firebase
