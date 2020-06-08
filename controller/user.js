@@ -18,8 +18,11 @@ exports.createNewUser = async (req, res, next) => {
     const result = await firebase
       .auth()
       .createUserWithEmailAndPassword(email, password);
-    const token = result.user.xa;
+
     const uid = result.user.uid;
+
+    const token = await admin.auth().createCustomToken(uid);
+
     const user = {
       name,
       email,

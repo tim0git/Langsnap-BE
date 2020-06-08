@@ -28,7 +28,7 @@ describe("GET /api", () => {
 });
 
 // tests logging into a users account. FireBase Auth.
-xdescribe("POST /api/auth", () => {
+describe("POST /api/auth", () => {
   after((done) => {
     server.close();
     done();
@@ -216,12 +216,58 @@ describe("POST /api/associations", () => {
     done();
   });
 
-  it("responds with translated word", (done) => {
+  it("responds with an array of 3 words", (done) => {
     request(app)
       .post("/api/associations")
       .send({
         text: "house",
         lang: "en",
+      })
+      .expect(200)
+      .then((res) => {
+        expect(res.body).to.an("object");
+        expect(res.body).to.contain.property("message");
+        expect(res.body.message).to.have.all.keys("word", "wordsArray");
+        expect(res.body.message.word).to.deep.equal("house");
+        expect(res.body.message.wordsArray).to.have.lengthOf(3);
+        expect(res.body.message.wordsArray).to.be.an.instanceof(Array);
+        res.body.message.wordsArray.forEach((word) => {
+          expect(word.item).to.be.a("string");
+        });
+        done();
+      })
+      .catch((err) => done(err));
+  });
+  it("responds with an array of 3 words with the filter applied", (done) => {
+    request(app)
+      .post("/api/associations")
+      .send({
+        text: "house",
+        lang: "en",
+        filter: "noun",
+      })
+      .expect(200)
+      .then((res) => {
+        expect(res.body).to.an("object");
+        expect(res.body).to.contain.property("message");
+        expect(res.body.message).to.have.all.keys("word", "wordsArray");
+        expect(res.body.message.word).to.deep.equal("house");
+        expect(res.body.message.wordsArray).to.have.lengthOf(3);
+        expect(res.body.message.wordsArray).to.be.an.instanceof(Array);
+        res.body.message.wordsArray.forEach((word) => {
+          expect(word.pos).to.not.equal("noun");
+        });
+        done();
+      })
+      .catch((err) => done(err));
+  });
+  it("responds with an array of 3 words with the filter equal to null ", (done) => {
+    request(app)
+      .post("/api/associations")
+      .send({
+        text: "house",
+        lang: "en",
+        filter: "",
       })
       .expect(200)
       .then((res) => {
@@ -304,6 +350,35 @@ describe("POST /api/user", () => {
         usersRef.remove();
       });
     server.close();
+    done();
+  });
+
+  it("should create a user when passed an email address and password", (done) => {
+    request(app)
+      .post("/api/user")
+      .send({
+        name: "testuser1",
+        password: "1234567",
+        email: "test@icloud.com",
+      })
+      .expect(201)
+      .then((res) => {
+        expect(res.body).to.have.all.keys("user", "token");
+        expect(res.body.user).to.have.all.keys("name", "email");
+        expect(res.body.user.email).to.be.a("string");
+        expect(res.body.user.email).to.deep.equal("test@icloud.com");
+        done();
+      })
+      .catch((err) => done(err));
+  });
+});
+
+//test create a new user. FireBase Auth.
+xdescribe("GET /api/auth/test", () => {
+  before((done) => {
+    const email = "testymc@gmail.com";
+    const password = "1234567";
+
     done();
   });
 
