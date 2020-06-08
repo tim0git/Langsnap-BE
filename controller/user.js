@@ -11,7 +11,7 @@ if (!admin.apps.length) {
 const database = admin.database();
 const usersRef = database.ref("/users");
 
-// create new user. FireBase Auth. *** no database connected yet! ***
+// create new user. FireBase Auth. 
 exports.createNewUser = async (req, res, next) => {
   const { password, email, name } = req.body;
   try {
@@ -29,9 +29,8 @@ exports.createNewUser = async (req, res, next) => {
     // create user in database..
     // Send back token and user profile from database...
     res.status(201).send({ token: token, user: user });
-  } catch (error) {
-      console.log(error);
-      
-    //next({ code: code, message: message });
+  } catch ({code, message}) {
+    next({ code: code, message: message });
   }
 };
+

@@ -10,7 +10,7 @@ exports.translateWord = (req, res, next) => {
     .then(({ data }) => {
       const { translatedText } = data.responseData;
       if (data.responseStatus !== 200) {
-        next({ status: data.responseStatus, message: translatedText });
+        next({ status: data.responseStatus, message: translatedText, type: "translate" });
       } else {
         res.send({ message: translatedText });
       }

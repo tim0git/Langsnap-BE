@@ -14,13 +14,13 @@ describe("GET /api", () => {
     done();
   });
 
-  it("responds with message", function (done) {
+  it("responds with message", (done) => {
     request(app)
       .get("/api")
       .then((res) => {
         expect(res.body).to.contain.property("message");
         expect(res.body.message).to.be.a("string");
-        expect(res.body.message).to.equal("working GET /api");
+        expect(res.body.message).to.deep.equal("working GET /api");
         done();
       })
       .catch((err) => done(err));
@@ -34,7 +34,7 @@ describe("POST /api/auth", () => {
     done();
   });
 
-  it("responds with a token if correct email and password are provided", function (done) {
+  it("responds with a token if correct email and password are provided", (done) => {
     request(app)
       .post("/api/auth")
       .send({
@@ -50,7 +50,7 @@ describe("POST /api/auth", () => {
       .catch((err) => done(err));
   });
   //error checking
-  it("responds with error if incorrect password is provided", function (done) {
+  it("responds with error if incorrect password is provided", (done) => {
     request(app)
       .post("/api/auth")
       .send({
@@ -61,14 +61,14 @@ describe("POST /api/auth", () => {
       .then((res) => {
         expect(res.body.message).to.be.a("string");
         expect(res.body).to.contain.property("message");
-        expect(res.body.message).to.equal(
+        expect(res.body.message).to.deep.equal(
           "The password must be 6 characters long or more."
         );
         done();
       })
       .catch((err) => done(err));
   });
-  it("responds with error if incorrect username is provided", function (done) {
+  it("responds with error if incorrect username is provided", (done) => {
     request(app)
       .post("/api/auth")
       .send({
@@ -79,7 +79,7 @@ describe("POST /api/auth", () => {
       .then((res) => {
         expect(res.body.message).to.be.a("string");
         expect(res.body).to.contain.property("message");
-        expect(res.body.message).to.equal(
+        expect(res.body.message).to.deep.equal(
           "There is no user record corresponding to this identifier. The user may have been deleted."
         );
         done();
@@ -95,7 +95,7 @@ describe("GET /api/translate", () => {
     done();
   });
 
-  it("responds with translated word", function (done) {
+  it("responds with translated word", (done) => {
     request(app)
       .get("/api/translate")
       .send({
@@ -107,11 +107,31 @@ describe("GET /api/translate", () => {
         expect(res.body).to.an("object");
         expect(res.body).to.contain.property("message");
         expect(res.body.message).to.be.a("string");
-        expect(res.body.message).to.equal("le chat");
+        expect(res.body.message).to.deep.equal("le chat");
         done();
       })
       .catch((err) => done(err));
   });
+
+  it("responds with an error when word is an empty string", (done) => {
+    request(app)
+      .get("/api/translate")
+      .send({
+        word: "",
+        langpair: "en|fr",
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).to.equal("Must have valid word and langpair.");
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
+  // Not give it a word - input type wrong
+  // incorrect langpair
+  // invalid or operator or slash pair
+  // langpair wrong way round or giving a word in wrong language
 });
 
 // tests association word api call. Responds with nouns only.
@@ -121,7 +141,7 @@ describe("GET /api/associations", () => {
     done();
   });
 
-  it("responds with translated word", function (done) {
+  it("responds with translated word", (done) => {
     request(app)
       .get("/api/associations")
       .send({
@@ -133,7 +153,7 @@ describe("GET /api/associations", () => {
         expect(res.body).to.an("object");
         expect(res.body).to.contain.property("message");
         expect(res.body.message).to.have.all.keys("word", "wordsArray");
-        expect(res.body.message.word).to.equal("house");
+        expect(res.body.message.word).to.deep.equal("house");
         expect(res.body.message.wordsArray).to.have.lengthOf(3);
         expect(res.body.message.wordsArray).to.be.an.instanceof(Array);
         res.body.message.wordsArray.forEach((word) => {
@@ -148,11 +168,11 @@ describe("GET /api/associations", () => {
 // test authorised routes.
 describe("POST /api/auth", () => {
   let token = "";
-  after(function (done) {
+  after((done) => {
     server.close();
     done();
   });
-  before(function (done) {
+  before((done) => {
     const { password, email } = testUsers;
     firebase
       .auth()
@@ -161,7 +181,7 @@ describe("POST /api/auth", () => {
         admin
           .auth()
           .createCustomToken(uid)
-          .then(function (customToken) {
+          .then((customToken) => {
             token = customToken;
             done();
           });
@@ -169,14 +189,14 @@ describe("POST /api/auth", () => {
       .catch((err) => done(err));
   });
 
-  it("responds with a message on a test auth route", function (done) {
+  it("responds with a message on a test auth route", (done) => {
     request(app)
       .get("/api/auth/test")
       .set("token", token)
       .expect(200)
       .then((res) => {
         expect(res.body.message).to.be.a("string");
-        expect(res.body.message).to.equal("testasync@gmail.com");
+        expect(res.body.message).to.deep.equal("testasync@gmail.com");
         expect(res.body).to.contain.property("message");
         done();
       })
@@ -224,7 +244,7 @@ describe("POST /api/user", () => {
         expect(res.body).to.have.all.keys("user", "token");
         expect(res.body.user).to.have.all.keys("name", "email");
         expect(res.body.user.email).to.be.a("string");
-        expect(res.body.user.email).to.equal("test@icloud.com");
+        expect(res.body.user.email).to.deep.equal("test@icloud.com");
         done();
       })
       .catch((err) => done(err));

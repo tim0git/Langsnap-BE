@@ -55,6 +55,19 @@ exports.handleFirebase_Error = (err, req, res, next) => {
   }
 };
 
+exports.handleTranslateError = (err, req, res, next) => {
+  if (err.type === "translate") {
+    const codes = {
+      403: { status: 400, message: "Must have valid word and langpair." },
+    };
+    const { status, message } = codes[err.status];
+
+    res.status(status).send({ message: message });
+  } else {
+    next(err);
+  }
+};
+
 exports.handleCustomError = (err, req, res, next) => {
   if (err.status) {
     console.log("handled custom error");

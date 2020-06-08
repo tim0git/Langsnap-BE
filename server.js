@@ -3,6 +3,7 @@ const {
   handleCustomError,
   handleInternalError,
   handleFirebase_Error,
+  handleTranslateError,
 } = require("./error/errorHandling");
 const { apiRouter } = require("./routes/api");
 
@@ -39,7 +40,7 @@ app.use("/api", apiRouter);
 
 //error handelling.
 app.use(handleFirebase_Error);
-
+app.use(handleTranslateError);
 app.use(handleCustomError);
 app.use(handleInternalError);
 
