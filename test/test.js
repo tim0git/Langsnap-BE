@@ -9,7 +9,7 @@ const expect = require("chai").expect;
 
 //test express router for /api
 describe("GET /api", () => {
-  after(function (done) {
+  after((done) => {
     server.close();
     done();
   });
@@ -28,8 +28,8 @@ describe("GET /api", () => {
 });
 
 // tests logging into a users account. FireBase Auth.
-describe("POST /api/auth", () => {
-  after(function (done) {
+xdescribe("POST /api/auth", () => {
+  after((done) => {
     server.close();
     done();
   });
@@ -90,7 +90,7 @@ describe("POST /api/auth", () => {
 
 // tests translate word api call.
 describe("GET /api/translate", () => {
-  after(function (done) {
+  after((done) => {
     server.close();
     done();
   });
@@ -113,7 +113,22 @@ describe("GET /api/translate", () => {
       .catch((err) => done(err));
   });
 
-  it("responds with an error when word is an empty string", (done) => {
+  it("status 200: responds with translated word regardless which way round the langpair is", (done) => {
+    request(app)
+      .get("/api/translate")
+      .send({
+        word: "cat",
+        langpair: "fr|en",
+      })
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.message).to.deep.equal("chat");
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
+  it("status 400: responds with an error when word is an empty string", (done) => {
     request(app)
       .get("/api/translate")
       .send({
@@ -128,15 +143,56 @@ describe("GET /api/translate", () => {
       .catch((err) => done(err));
   });
 
-  // Not give it a word - input type wrong
-  // incorrect langpair
-  // invalid or operator or slash pair
-  // langpair wrong way round or giving a word in wrong language
+  it("status 400: responds with an error when input is not a string", (done) => {
+    request(app)
+      .get("/api/translate")
+      .send({
+        word: 123,
+        langpair: "en|fr",
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).to.equal("Invalid word.");
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
+  it("status 400: responds with an error when langpair is not a string", (done) => {
+    request(app)
+      .get("/api/translate")
+      .send({
+        word: "cat",
+        langpair: 123,
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).to.equal("Must have valid word and langpair.");
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
+  it("status 400: responds with an error when langpair is invalid", (done) => {
+    request(app)
+      .get("/api/translate")
+      .send({
+        word: "cat",
+        langpair: "invalid",
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).to.equal("Must have valid word and langpair.");
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
 });
 
 // tests association word api call. Responds with nouns only.
 describe("GET /api/associations", () => {
-  after(function (done) {
+  after((done) => {
     server.close();
     done();
   });
@@ -220,7 +276,7 @@ describe("POST /api/user", () => {
         //assign loggedin user to current user
         const user = firebase.auth().currentUser;
         //delete current user
-        user.delete().catch(function (error) {
+        user.delete().catch((error) => {
           done(error);
           // delete from realtimeDB
         });

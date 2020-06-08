@@ -3,6 +3,10 @@ const axios = require("axios");
 //call to translated word api
 exports.translateWord = (req, res, next) => {
   const { word, langpair } = req.body;
+  const valid = new RegExp(`([a-z]{${word.length}})`, "i");
+
+  if (!valid.test(word)) return next({ status: 400, message: "Invalid word." });
+
   axios
     .get("https://api.mymemory.translated.net/get", {
       params: { q: word, langpair: langpair },
@@ -10,7 +14,11 @@ exports.translateWord = (req, res, next) => {
     .then(({ data }) => {
       const { translatedText } = data.responseData;
       if (data.responseStatus !== 200) {
-        next({ status: data.responseStatus, message: translatedText, type: "translate" });
+        next({
+          status: data.responseStatus,
+          message: translatedText,
+          type: "translate",
+        });
       } else {
         res.send({ message: translatedText });
       }
