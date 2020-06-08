@@ -11,7 +11,7 @@ if (!admin.apps.length) {
 const database = admin.database();
 const usersRef = database.ref("/users");
 
-// create new user. FireBase Auth. 
+// create new user. FireBase Auth.
 exports.createNewUser = async (req, res, next) => {
   const { password, email, name } = req.body;
   try {
@@ -20,7 +20,6 @@ exports.createNewUser = async (req, res, next) => {
       .createUserWithEmailAndPassword(email, password);
     const token = result.user.xa;
     const uid = result.user.uid;
-
     const user = {
       name,
       email,
@@ -29,8 +28,7 @@ exports.createNewUser = async (req, res, next) => {
     // create user in database..
     // Send back token and user profile from database...
     res.status(201).send({ token: token, user: user });
-  } catch ({code, message}) {
+  } catch ({ code, message }) {
     next({ code: code, message: message });
   }
 };
-

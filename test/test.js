@@ -113,6 +113,26 @@ describe("POST /api/translate", () => {
       .catch((err) => done(err));
   });
 
+  it("responds with translated word", (done) => {
+    request(app)
+      .post("/api/translate")
+      .send({
+        word: "wall clock",
+        langpair: "en|de",
+      })
+      .expect(200)
+      .then((res) => {
+        console.log(res.body.message);
+
+        expect(res.body).to.an("object");
+        expect(res.body).to.contain.property("message");
+        expect(res.body.message).to.be.a("string");
+        expect(res.body.message).to.deep.equal("Wanduhr");
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
   it("status 200: responds with translated word regardless which way round the langpair is", (done) => {
     request(app)
       .post("/api/translate")
@@ -286,6 +306,7 @@ describe("POST /api/user", () => {
     server.close();
     done();
   });
+
   it("should create a user when passed an email address and password", (done) => {
     request(app)
       .post("/api/user")
