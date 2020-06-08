@@ -1,8 +1,7 @@
 const translateRouter = require("express").Router();
 const { translateWord } = require("../controller/translate");
 
-
 //signIn user
-translateRouter.route("/").get(translateWord);
+translateRouter.route("/").post(translateWord);
 
 module.exports = { translateRouter };

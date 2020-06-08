@@ -89,7 +89,7 @@ xdescribe("POST /api/auth", () => {
 });
 
 // tests translate word api call.
-describe("GET /api/translate", () => {
+describe("POST /api/translate", () => {
   after((done) => {
     server.close();
     done();
@@ -97,7 +97,7 @@ describe("GET /api/translate", () => {
 
   it("responds with translated word", (done) => {
     request(app)
-      .get("/api/translate")
+      .post("/api/translate")
       .send({
         word: "cat",
         langpair: "en|fr",
@@ -115,7 +115,7 @@ describe("GET /api/translate", () => {
 
   it("status 200: responds with translated word regardless which way round the langpair is", (done) => {
     request(app)
-      .get("/api/translate")
+      .post("/api/translate")
       .send({
         word: "cat",
         langpair: "fr|en",
@@ -130,7 +130,7 @@ describe("GET /api/translate", () => {
 
   it("status 400: responds with an error when word is an empty string", (done) => {
     request(app)
-      .get("/api/translate")
+      .post("/api/translate")
       .send({
         word: "",
         langpair: "en|fr",
@@ -145,7 +145,7 @@ describe("GET /api/translate", () => {
 
   it("status 400: responds with an error when input is not a string", (done) => {
     request(app)
-      .get("/api/translate")
+      .post("/api/translate")
       .send({
         word: 123,
         langpair: "en|fr",
@@ -160,7 +160,7 @@ describe("GET /api/translate", () => {
 
   it("status 400: responds with an error when langpair is not a string", (done) => {
     request(app)
-      .get("/api/translate")
+      .post("/api/translate")
       .send({
         word: "cat",
         langpair: 123,
@@ -175,7 +175,7 @@ describe("GET /api/translate", () => {
 
   it("status 400: responds with an error when langpair is invalid", (done) => {
     request(app)
-      .get("/api/translate")
+      .post("/api/translate")
       .send({
         word: "cat",
         langpair: "invalid",
@@ -187,11 +187,10 @@ describe("GET /api/translate", () => {
       })
       .catch((err) => done(err));
   });
-
 });
 
 // tests association word api call. Responds with nouns only.
-describe("GET /api/associations", () => {
+describe("POST /api/associations", () => {
   after((done) => {
     server.close();
     done();
@@ -199,7 +198,7 @@ describe("GET /api/associations", () => {
 
   it("responds with translated word", (done) => {
     request(app)
-      .get("/api/associations")
+      .post("/api/associations")
       .send({
         text: "house",
         lang: "en",
