@@ -374,28 +374,51 @@ describe("POST /api/user", () => {
 });
 
 //test create a new user. FireBase Auth.
-xdescribe("GET /api/auth/test", () => {
-  before((done) => {
-    const email = "testymc@gmail.com";
-    const password = "1234567";
+describe("GET /api/auth/test", () => {
+  let globalToken = "";
+  before(async () => {
+    try {
+      const email = "testyAutoSignIn@gmail.com";
+      const password = "1234567";
+      const res = await firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password);
+      const uid = res.user.uid;
+      const token = await admin.auth().createCustomToken(uid);
+      return (globalToken = token);
+    } catch (error) {
+      return error;
+    }
+  });
 
+  after((done) => {
+    const email = "testyAutoSignIn@gmail.com";
+    const password = "1234567";
+    //ensure user is logged in...
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then((res) => {
+        const { uid } = res.user;
+        //assign loggedin user to current user
+        const user = firebase.auth().currentUser;
+        //delete current user
+        user.delete().catch((error) => {
+          done(error);
+          // delete from realtimeDB
+        });
+      });
+    server.close();
     done();
   });
 
-  it("should create a user when passed an email address and password", (done) => {
+  it("should be able to access routes with token from sign up", (done) => {
     request(app)
-      .post("/api/user")
-      .send({
-        name: "testuser1",
-        password: "1234567",
-        email: "test@icloud.com",
-      })
-      .expect(201)
+      .get("/api/auth/test")
+      .set("token", globalToken)
       .then((res) => {
-        expect(res.body).to.have.all.keys("user", "token");
-        expect(res.body.user).to.have.all.keys("name", "email");
-        expect(res.body.user.email).to.be.a("string");
-        expect(res.body.user.email).to.deep.equal("test@icloud.com");
+        console.log(res.body.message);
+        expect(res.body.message).to.deep.equal("testyautosignin@gmail.com");
         done();
       })
       .catch((err) => done(err));
