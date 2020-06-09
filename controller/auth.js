@@ -24,7 +24,7 @@ exports.signinUser = (req, res, next) => {
 
 // Tested and working auth checker,
 exports.auth = async (req, res, next) => {
-  const token = req.header("token");
+  const token = req.header("x-auth-token");
   if (!token) {
     return res.status(401).send({ message: "no token, authorisation denied" });
   }
