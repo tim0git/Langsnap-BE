@@ -311,7 +311,7 @@ describe("POST /api/auth/test", () => {
   it("responds with a users email on a test auth route", (done) => {
     request(app)
       .get("/api/auth/test")
-      .set("token", token)
+      .set("x-auth-token", token)
       .expect(200)
       .then((res) => {
         expect(res.body.message).to.be.a("string");
@@ -518,7 +518,7 @@ describe("GET /api/auth/test", () => {
   it("should be able to access routes with token from sign up", (done) => {
     request(app)
       .get("/api/auth/test")
-      .set("token", globalToken)
+      .set("x-auth-token", globalToken)
       .then((res) => {
         expect(res.body.message).to.deep.equal("testyautosignin@gmail.com");
         done();
