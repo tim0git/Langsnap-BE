@@ -14,13 +14,19 @@ const usersRef = database.ref("/users");
 // create new user. FireBase Auth.
 exports.createNewUser = async (req, res, next) => {
   const { password, email, name } = req.body;
-  
-  let regex = /[@]/g;
-
+  let regex = /^\S+@\S+$/;
   if (!name) return next({ status: 400, message: "Name required." });
-
+  if (!password)
+    return next({
+      status: 400,
+      message: "The password must be 6 characters long or more.",
+    });
+    
   if (!regex.test(email))
-    return next({ status: 400, message: "Valid email required." });
+    return next({
+      status: 400,
+      message: "The email address is badly formatted.",
+    });
 
   try {
     const result = await firebase
@@ -40,10 +46,6 @@ exports.createNewUser = async (req, res, next) => {
     // Send back token and user profile from database...
     res.status(201).send({ token: token, user: user });
   } catch ({ code, message }) {
-    if (code === "auth/invalid-email") {
-      console.log("in ctrl error caught");
-    }
-
     next({ code: code, message: message });
   }
 };

@@ -370,7 +370,7 @@ describe("POST /api/user", () => {
   });
 });
 
-describe("should test errors", () => {
+describe("POST /api/user ERRORS", () => {
   it("status: 400. error if password is under seven characters long", (done) => {
     request(app)
       .post("/api/user")
@@ -405,7 +405,7 @@ describe("should test errors", () => {
       .catch((err) => done(err));
   });
 
-  xit("status: 400. error if no email address given", (done) => {
+  it("status: 400. error if no email address given", (done) => {
     request(app)
       .post("/api/user")
       .send({
@@ -415,11 +415,62 @@ describe("should test errors", () => {
       })
       .then(({ body }) => {
         expect(body.message).to.equal("The email address is badly formatted.");
+        done();
       })
       .catch((err) => done(err));
   });
-  // no password provided
-  // user already exists
+
+  it("status: 400. Error when invalid email passed", (done) => {
+    request(app)
+      .post("/api/user")
+      .send({
+        name: "testuser1",
+        password: "123456",
+        email: "@",
+      })
+      .then(({ body }) => {
+        expect(body.message).to.equal("The email address is badly formatted.");
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
+  it("status: 400. error if no password given", (done) => {
+    request(app)
+      .post("/api/user")
+      .send({
+        name: "testuser1",
+        password: "",
+        email: "test@icloud.com",
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).to.deep.equal(
+          "The password must be 6 characters long or more."
+        );
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
+  it("status: 400. error when user already exists", (done) => {
+    request(app)
+      .post("/api/user")
+      .send({
+        name: "testuser1",
+        password: "1234567",
+        email: "testperm@icloud.com",
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).to.deep.equal(
+          "The email address is already in use by another account."
+        );
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
   after(() => {
     server.close();
   });
