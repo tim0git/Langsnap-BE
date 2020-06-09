@@ -122,8 +122,6 @@ describe("POST /api/translate", () => {
       })
       .expect(200)
       .then((res) => {
-        console.log(res.body.message);
-
         expect(res.body).to.an("object");
         expect(res.body).to.contain.property("message");
         expect(res.body.message).to.be.a("string");
@@ -287,7 +285,7 @@ describe("POST /api/associations", () => {
 });
 
 // test authorised routes.
-describe("POST /api/auth", () => {
+describe("POST /api/auth/test", () => {
   let token = "";
   after((done) => {
     server.close();
@@ -310,7 +308,7 @@ describe("POST /api/auth", () => {
       .catch((err) => done(err));
   });
 
-  it("responds with a message on a test auth route", (done) => {
+  it("responds with a users email on a test auth route", (done) => {
     request(app)
       .get("/api/auth/test")
       .set("token", token)
@@ -329,7 +327,7 @@ describe("POST /api/auth", () => {
 
 //test create a new user. FireBase Auth.
 describe("POST /api/user", () => {
-  after((done) => {
+  afterEach((done) => {
     const password = "1234567";
     const email = "test@icloud.com";
     //ensure user is logged in...
@@ -349,7 +347,6 @@ describe("POST /api/user", () => {
         const usersRef = database.ref("/users/" + uid);
         usersRef.remove();
       });
-    server.close();
     done();
   });
 
@@ -370,6 +367,61 @@ describe("POST /api/user", () => {
         done();
       })
       .catch((err) => done(err));
+  });
+});
+
+describe("should test errors", () => {
+  it("status: 400. error if password is under seven characters long", (done) => {
+    request(app)
+      .post("/api/user")
+      .send({
+        name: "testuser1",
+        password: "12345",
+        email: "test@icloud.com",
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).to.deep.equal(
+          "The password must be 6 characters long or more."
+        );
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
+  it("status: 400. error if no name given", (done) => {
+    request(app)
+      .post("/api/user")
+      .send({
+        name: "",
+        password: "123456",
+        email: "test@icloud.com",
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).to.deep.equal("Name required.");
+        done();
+      })
+      .catch((err) => done(err));
+  });
+
+  xit("status: 400. error if no email address given", (done) => {
+    request(app)
+      .post("/api/user")
+      .send({
+        name: "testuser1",
+        password: "123456",
+        email: "",
+      })
+      .then(({ body }) => {
+        expect(body.message).to.equal("The email address is badly formatted.");
+      })
+      .catch((err) => done(err));
+  });
+  // no password provided
+  // user already exists
+  after(() => {
+    server.close();
   });
 });
 
@@ -417,7 +469,6 @@ describe("GET /api/auth/test", () => {
       .get("/api/auth/test")
       .set("token", globalToken)
       .then((res) => {
-        console.log(res.body.message);
         expect(res.body.message).to.deep.equal("testyautosignin@gmail.com");
         done();
       })

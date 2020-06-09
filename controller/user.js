@@ -1,3 +1,4 @@
+
 const firebase = require("firebase");
 const admin = require("firebase-admin");
 const serviceAccount = require("../config/pointtranslate-da844-firebase-adminsdk-prgku-17a5c09beb.json");
@@ -14,6 +15,9 @@ const usersRef = database.ref("/users");
 // create new user. FireBase Auth.
 exports.createNewUser = async (req, res, next) => {
   const { password, email, name } = req.body;
+
+  if (!name) return next({ status: 400, message: "Name required." });
+
   try {
     const result = await firebase
       .auth()
@@ -32,6 +36,11 @@ exports.createNewUser = async (req, res, next) => {
     // Send back token and user profile from database...
     res.status(201).send({ token: token, user: user });
   } catch ({ code, message }) {
+    if (code === "auth/invalid-email") {
+      console.log("in ctrl error caught");
+    }
+
     next({ code: code, message: message });
   }
 };
+

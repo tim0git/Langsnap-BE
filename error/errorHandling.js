@@ -11,6 +11,7 @@ exports.handle405 = (req, res, next) => {
 };
 
 exports.handleFirebase_Error = (err, req, res, next) => {
+  console.log(err)
   const { code } = err;
   const codes = {
     "auth/wrong-password": {
@@ -29,6 +30,10 @@ exports.handleFirebase_Error = (err, req, res, next) => {
     "auth/email-already-in-use": {
       status: 400,
       message: "The email address is already in use by another account.",
+    },
+    "auth/invalid-email": {
+      status: 400,
+      message: "The email address is badly formatted.",
     },
     "auth/invalid-api-key": {
       status: 500,
@@ -70,7 +75,7 @@ exports.handleTranslateError = (err, req, res, next) => {
 
 exports.handleCustomError = (err, req, res, next) => {
   if (err.status) {
-   // console.log("handled custom error");
+    // console.log("handled custom error");
     res.status(err.status).send({ message: err.message });
   } else {
     console.log("passed next custom error");
