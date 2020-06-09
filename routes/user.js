@@ -1,5 +1,5 @@
 const userRouter = require("express").Router();
-const firebase = require("firebase");
+const { wordsRouter } = require("./words");
 const { createNewUser } = require("../controller/user");
 
 userRouter.route("/").get((req, res) => {
@@ -8,5 +8,6 @@ userRouter.route("/").get((req, res) => {
 
 //signIn user
 userRouter.route("/").post(createNewUser);
+userRouter.use("/words", wordsRouter);
 
 module.exports = { userRouter };

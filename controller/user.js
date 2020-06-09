@@ -21,7 +21,7 @@ exports.createNewUser = async (req, res, next) => {
       status: 400,
       message: "The password must be 6 characters long or more.",
     });
-    
+
   if (!regex.test(email))
     return next({
       status: 400,
@@ -41,6 +41,7 @@ exports.createNewUser = async (req, res, next) => {
       name,
       email,
     };
+
     usersRef.child(uid).set(user);
     // create user in database..
     // Send back token and user profile from database...
@@ -49,3 +50,41 @@ exports.createNewUser = async (req, res, next) => {
     next({ code: code, message: message });
   }
 };
+
+exports.saveWordsToUserID = (req, res, next) => {
+  const { language, englishWord, translatedWord } = req.body;
+  const { uid } = req;
+
+  const newWord = {
+    [language]: {
+      [englishWord]: translatedWord,
+    },
+  };
+
+  ref = database.ref("users/" + uid + "/words");
+
+  const newPostKey = ref.child("words").push().key;
+
+  const updates = {};
+  updates["/words/" + newPostKey] = newWord;
+  ref.update(updates);
+
+  ref.once("value", (snapShot) => {
+    console.log(snapShot.val());
+  });
+
+  res.status(200).send({ message: "wip on routes" });
+};
+
+const words = {
+  "-M9Oh-_Kc6ViGpVzVbwK": { german: { eng: "germ1" } },
+  "-M9Oh3l_04Zn7MOyiDW8": { german: { eng: "germ2" } },
+  "-M9Oh5vGmhsvltovbpOr": { german: { eng: "germ3" } },
+  "-M9OhzLPDtgdl7DV38m1": { german: { eng: "germ4" } },
+};
+
+const mappy = Object.entries(words).map(([key, obj]) => {
+  return obj["german"];
+});
+
+console.log(mappy);

@@ -50,6 +50,7 @@ describe("POST /api/auth", () => {
           })
           .catch((err) => done(err));
       });
+
       //error checking
       it("responds with error if incorrect password is provided", (done) => {
         request(app)
@@ -69,7 +70,8 @@ describe("POST /api/auth", () => {
           })
           .catch((err) => done(err));
       });
-      it("responds with error if incorrect username is provided", (done) => {
+
+      it("responds with error if incorrect email is provided", (done) => {
         request(app)
           .post("/api/auth")
           .send({
@@ -82,6 +84,40 @@ describe("POST /api/auth", () => {
             expect(body).to.contain.property("message");
             expect(body.message).to.deep.equal(
               "There is no user record corresponding to this identifier. The user may have been deleted."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status 400: responds with error if no password provided", (done) => {
+        request(app)
+          .post("/api/auth")
+          .send({
+            password: "",
+            email: "testperm@icloud.com",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "The password must be 6 characters long or more."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status 400: responds with error if no email address provided", (done) => {
+        request(app)
+          .post("/api/auth")
+          .send({
+            password: "1234567",
+            email: "",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "The email address is badly formatted."
             );
             done();
           })
