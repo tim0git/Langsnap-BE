@@ -5,7 +5,7 @@ const {
   handleFirebase_Error,
   handleTranslateError,
 } = require("./error/errorHandling");
-const { apiRouter } = require("./routes/api");
+const { apiRouter } = require("./routes/api.router");
 
 const cors = require("cors"); //  'This is CORS-enabled for all origins!'
 

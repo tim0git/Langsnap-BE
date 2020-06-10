@@ -1,5 +1,5 @@
 const authRouter = require("express").Router();
-const { signinUser, auth } = require("../controller/auth");
+const { signinUser, auth } = require("../controller/auth.controller");
 
 authRouter.route("/").get((req, res) => {
   res.send({ message: "working GET /api/auth" });

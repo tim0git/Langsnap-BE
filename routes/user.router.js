@@ -1,6 +1,6 @@
 const userRouter = require("express").Router();
-const { wordsRouter } = require("./words");
-const { createNewUser } = require("../controller/user");
+const { wordsRouter } = require("./words.router");
+const { createNewUser } = require("../controller/user.controller");
 
 userRouter.route("/").get((req, res) => {
   res.send({ message: "working GET /api/user" });
