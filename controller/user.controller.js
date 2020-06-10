@@ -47,14 +47,12 @@ exports.createNewUser = async (req, res, next) => {
 
 exports.saveWordsToUserID = (req, res, next) => {
   const { language, englishWord, translatedWord } = req.body;
-
   if (!language || !englishWord || !translatedWord) {
     return res.status(400).send({
       message:
         "Must have a valid language, englishWord, translatedWord in order to be stored in the database.",
     });
   }
-  
   const { uid } = req;
   const newWord = {
     [language]: {
@@ -66,7 +64,6 @@ exports.saveWordsToUserID = (req, res, next) => {
   const updates = {};
   updates["/words/" + newPostKey] = newWord;
   ref.update(updates);
-
   ref.child("words").once("value", (snapShot) => {
     const wordsList = snapShot.val();
     res.status(200).send({ wordsList: wordsList });

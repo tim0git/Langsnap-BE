@@ -58,7 +58,7 @@ describe("POST /api/auth", () => {
           .post("/api/auth")
           .send({
             password: "123456",
-            email: "testperm@icloud.com",
+            email: "testasync@gmail.com",
           })
           .expect(400)
           .then(({ body }) => {
