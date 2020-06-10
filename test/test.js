@@ -2,7 +2,7 @@ const firebase = require("firebase");
 const admin = require("firebase-admin");
 const { app, server } = require("../server");
 const request = require("supertest");
-const { testUsers } = require("../config/passwords");
+//const { testUsers } = require("../config/passwords");
 
 //Chai config,
 const expect = require("chai").expect;
@@ -44,7 +44,7 @@ describe("POST /api/auth", () => {
           })
           .expect(200)
           .then(({ body }) => {
-            expect(body.token).to.a("string");
+            expect(body.token).to.be.a("string");
             expect(body).to.contain.property("token");
             done();
           })
@@ -133,8 +133,11 @@ describe("POST /api/auth", () => {
         server.close();
         done();
       });
+
       before((done) => {
-        const { password, email } = testUsers;
+        const email = "testasync@gmail.com";
+        const password = "1234567";
+
         firebase
           .auth()
           .signInWithEmailAndPassword(email, password)
@@ -220,157 +223,334 @@ describe("POST /api/auth", () => {
 });
 
 describe("POST /api/user", () => {
-  describe("create a new user. FireBase Auth.", () => {
-    afterEach((done) => {
-      const password = "1234567";
-      const email = "test@icloud.com";
-      //ensure user is logged in...
-      firebase
-        .auth()
-        .signInWithEmailAndPassword(email, password)
-        .then((res) => {
-          const { uid } = res.user;
-          //assign loggedin user to current user
-          const user = firebase.auth().currentUser;
-          //delete current user
-          user.delete().catch((error) => {
-            done(error);
-            // delete from realtimeDB
+  describe("/", () => {
+    describe("create a new user. FireBase Auth.", () => {
+      afterEach((done) => {
+        const password = "1234567";
+        const email = "test@icloud.com";
+        //ensure user is logged in...
+        firebase
+          .auth()
+          .signInWithEmailAndPassword(email, password)
+          .then((res) => {
+            const { uid } = res.user;
+            //assign loggedin user to current user
+            const user = firebase.auth().currentUser;
+            //delete current user
+            user.delete().catch((error) => {
+              done(error);
+              // delete from realtimeDB
+            });
+            const database = admin.database();
+            const usersRef = database.ref("/users/" + uid);
+            usersRef.remove();
           });
-          const database = admin.database();
-          const usersRef = database.ref("/users/" + uid);
-          usersRef.remove();
-        });
-      done();
+        done();
+      });
+
+      it("should create a user when passed an email address and password", (done) => {
+        request(app)
+          .post("/api/user")
+          .send({
+            name: "testuser1",
+            password: "1234567",
+            email: "test@icloud.com",
+          })
+          .expect(201)
+          .then(({ body }) => {
+            expect(body).to.have.all.keys("user", "token");
+            expect(body.user).to.have.all.keys("name", "email");
+            expect(body.user.email).to.be.a("string");
+            expect(body.user.email).to.deep.equal("test@icloud.com");
+            done();
+          })
+          .catch((err) => done(err));
+      });
     });
 
-    it("should create a user when passed an email address and password", (done) => {
-      request(app)
-        .post("/api/user")
-        .send({
-          name: "testuser1",
-          password: "1234567",
-          email: "test@icloud.com",
-        })
-        .expect(201)
-        .then(({ body }) => {
-          expect(body).to.have.all.keys("user", "token");
-          expect(body.user).to.have.all.keys("name", "email");
-          expect(body.user.email).to.be.a("string");
-          expect(body.user.email).to.deep.equal("test@icloud.com");
-          done();
-        })
-        .catch((err) => done(err));
+    describe("tests errors for creating a new user. FireBase Auth", () => {
+      it("status: 400. error if password is under seven characters long", (done) => {
+        request(app)
+          .post("/api/user")
+          .send({
+            name: "testuser1",
+            password: "12345",
+            email: "test@icloud.com",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "The password must be 6 characters long or more."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 400. error if no name given", (done) => {
+        request(app)
+          .post("/api/user")
+          .send({
+            name: "",
+            password: "123456",
+            email: "test@icloud.com",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal("Name required.");
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 400. error if no email address given", (done) => {
+        request(app)
+          .post("/api/user")
+          .send({
+            name: "testuser1",
+            password: "123456",
+            email: "",
+          })
+          .then(({ body }) => {
+            expect(body.message).to.equal(
+              "The email address is badly formatted."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 400. Error when invalid email passed", (done) => {
+        request(app)
+          .post("/api/user")
+          .send({
+            name: "testuser1",
+            password: "123456",
+            email: "@",
+          })
+          .then(({ body }) => {
+            expect(body.message).to.equal(
+              "The email address is badly formatted."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 400. error if no password given", (done) => {
+        request(app)
+          .post("/api/user")
+          .send({
+            name: "testuser1",
+            password: "",
+            email: "test@icloud.com",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "The password must be 6 characters long or more."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 400. error when user already exists", (done) => {
+        request(app)
+          .post("/api/user")
+          .send({
+            name: "testuser1",
+            password: "1234567",
+            email: "testperm@icloud.com",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "The email address is already in use by another account."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      after(() => {
+        server.close();
+      });
     });
   });
 
-  describe("tests errors for creating a new user. FireBase Auth", () => {
-    it("status: 400. error if password is under seven characters long", (done) => {
-      request(app)
-        .post("/api/user")
-        .send({
-          name: "testuser1",
-          password: "12345",
-          email: "test@icloud.com",
-        })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.message).to.deep.equal(
-            "The password must be 6 characters long or more."
-          );
-          done();
-        })
-        .catch((err) => done(err));
-    });
+  describe("/words", () => {
+    describe("Add a word to a users database. FireBase authenticated", () => {
+      let globalToken = "";
+      before(async () => {
+        try {
+          const email = "postmanPat2@gmail.com";
+          const password = "1234567";
+          const res = await firebase
+            .auth()
+            .signInWithEmailAndPassword(email, password);
+          const uid = res.user.uid;
+          const token = await admin.auth().createCustomToken(uid);
+          return (globalToken = token);
+        } catch (error) {
+          return error;
+        }
+      });
 
-    it("status: 400. error if no name given", (done) => {
-      request(app)
-        .post("/api/user")
-        .send({
-          name: "",
-          password: "123456",
-          email: "test@icloud.com",
-        })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.message).to.deep.equal("Name required.");
-          done();
-        })
-        .catch((err) => done(err));
-    });
+      after((done) => {
+        server.close();
+        done();
+      });
 
-    it("status: 400. error if no email address given", (done) => {
-      request(app)
-        .post("/api/user")
-        .send({
-          name: "testuser1",
-          password: "123456",
-          email: "",
-        })
-        .then(({ body }) => {
-          expect(body.message).to.equal(
-            "The email address is badly formatted."
-          );
-          done();
-        })
-        .catch((err) => done(err));
-    });
+      it("status: 200. return wordsList.", (done) => {
+        request(app)
+          .post("/api/user/words")
+          .set("x-auth-token", globalToken)
+          .send({
+            englishWord: "cat",
+            language: "German",
+            translatedWord: "die Katze",
+          })
+          .expect(200)
+          .then(({ body }) => {
+            expect(body).to.contain.property("wordsList");
+            done();
+          })
+          .catch((err) => done(err));
+      });
 
-    it("status: 400. Error when invalid email passed", (done) => {
-      request(app)
-        .post("/api/user")
-        .send({
-          name: "testuser1",
-          password: "123456",
-          email: "@",
-        })
-        .then(({ body }) => {
-          expect(body.message).to.equal(
-            "The email address is badly formatted."
-          );
-          done();
-        })
-        .catch((err) => done(err));
-    });
+      it("status: 200. word is added to users words list.", (done) => {
+        request(app)
+          .post("/api/user/words")
+          .set("x-auth-token", globalToken)
+          .send({
+            englishWord: "cat",
+            language: "German",
+            translatedWord: "die Katze",
+          })
+          .expect(200)
+          .then(({ body }) => {
+            const includes = Object.entries(body.wordsList).some(
+              ([key, pair]) => {
+                return pair["German"]["cat"] === "die Katze";
+              }
+            );
+            expect(includes).to.deep.equal(true);
+            done();
+          })
+          .catch((err) => done(err));
+      });
 
-    it("status: 400. error if no password given", (done) => {
-      request(app)
-        .post("/api/user")
-        .send({
-          name: "testuser1",
-          password: "",
-          email: "test@icloud.com",
-        })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.message).to.deep.equal(
-            "The password must be 6 characters long or more."
-          );
-          done();
-        })
-        .catch((err) => done(err));
-    });
+      it("status: 400. error when missing englishWord property on request body", (done) => {
+        request(app)
+          .post("/api/user/words")
+          .set("x-auth-token", globalToken)
+          .send({
+            language: "German",
+            translatedWord: "die Katze",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language, englishWord, translatedWord in order to be stored in the database."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
 
-    it("status: 400. error when user already exists", (done) => {
-      request(app)
-        .post("/api/user")
-        .send({
-          name: "testuser1",
-          password: "1234567",
-          email: "testperm@icloud.com",
-        })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.message).to.deep.equal(
-            "The email address is already in use by another account."
-          );
-          done();
-        })
-        .catch((err) => done(err));
-    });
+      it("status: 400. error when missing language property on request body", (done) => {
+        request(app)
+          .post("/api/user/words")
+          .set("x-auth-token", globalToken)
+          .send({
+            englishWord: "cat",
+            translatedWord: "die Katze",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language, englishWord, translatedWord in order to be stored in the database."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
 
-    after(() => {
-      server.close();
+      it("status: 400. error when missing translatedWord property on request body", (done) => {
+        request(app)
+          .post("/api/user/words")
+          .set("x-auth-token", globalToken)
+          .send({
+            englishWord: "cat",
+            language: "German",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language, englishWord, translatedWord in order to be stored in the database."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 400. error when englishWord property is an empty string", (done) => {
+        request(app)
+          .post("/api/user/words")
+          .set("x-auth-token", globalToken)
+          .send({
+            englishWord: "",
+            language: "German",
+            translatedWord: "die Katze",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language, englishWord, translatedWord in order to be stored in the database."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 400. error when language property is an empty string", (done) => {
+        request(app)
+          .post("/api/user/words")
+          .set("x-auth-token", globalToken)
+          .send({
+            englishWord: "cat",
+            language: "",
+            translatedWord: "die Katze",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language, englishWord, translatedWord in order to be stored in the database."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 400. error when translatedWord property is an empty string", (done) => {
+        request(app)
+          .post("/api/user/words")
+          .set("x-auth-token", globalToken)
+          .send({
+            englishWord: "cat",
+            language: "German",
+            translatedWord: "",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language, englishWord, translatedWord in order to be stored in the database."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
     });
   });
 });
