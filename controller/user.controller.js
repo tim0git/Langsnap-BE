@@ -54,6 +54,7 @@ exports.saveWordsToUserID = (req, res, next) => {
         "Must have a valid language, englishWord, translatedWord in order to be stored in the database.",
     });
   }
+  
   const { uid } = req;
   const newWord = {
     [language]: {

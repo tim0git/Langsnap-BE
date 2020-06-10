@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test-watch": "mocha --watch",
-    "test": "mocha",
+    "test": "mocha -exit",
     "server": "nodemon server"
   },
   "repository": {

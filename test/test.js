@@ -385,7 +385,7 @@ describe("POST /api/user", () => {
       let globalToken = "";
       before(async () => {
         try {
-          const email = "postmanPat2@gmail.com";
+          const email = "postmanPat10@gmail.com";
           const password = "1234567";
           const res = await firebase
             .auth()

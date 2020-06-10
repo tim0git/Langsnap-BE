@@ -48,6 +48,10 @@ exports.handleFirebase_Error = (err, req, res, next) => {
       message:
         'createUserWithEmailAndPassword failed: Second argument "password" must be a valid string.',
     },
+    "auth/too-many-requests": {
+      status: 400,
+      message: "Too many unsuccessful login attempts. Please try again later.",
+    },
   };
   if (code in codes) {
     //console.log("handled firebase error");
