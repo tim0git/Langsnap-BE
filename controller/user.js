@@ -77,8 +77,8 @@ exports.saveWordsToUserID = (req, res, next) => {
 };
 
 const words = {
-  "-M9Oh-_Kc6ViGpVzVbwK": { german: { eng: "germ1" } },
-  "-M9Oh3l_04Zn7MOyiDW8": { german: { eng: "germ2" } },
+  "-M9Oh-_Kc6ViGpVzVbwK": { german: { cat: "die Katze" } },
+  "-M9Oh3l_04Zn7MOyiDW8": { german: { ball: "die Balle" } },
   "-M9Oh5vGmhsvltovbpOr": { german: { eng: "germ3" } },
   "-M9OhzLPDtgdl7DV38m1": { german: { eng: "germ4" } },
 };
