@@ -61,30 +61,20 @@ exports.saveWordsToUserID = (req, res, next) => {
     },
   };
 
-  ref = database.ref("users/" + uid + "/words");
+  ref = database.ref("users/" + uid);
 
-  const newPostKey = ref.child("words").push().key;
+  const newPostKey = ref.push().key;
 
   const updates = {};
   updates["/words/" + newPostKey] = newWord;
   ref.update(updates);
 
-  ref.once("value", (snapShot) => {
+  ref.child("words").once("value", (snapShot) => {
     console.log(snapShot.val());
   });
 
   res.status(200).send({ message: "wip on routes" });
 };
 
-const words = {
-  "-M9Oh-_Kc6ViGpVzVbwK": { german: { eng: "germ1" } },
-  "-M9Oh3l_04Zn7MOyiDW8": { german: { eng: "germ2" } },
-  "-M9Oh5vGmhsvltovbpOr": { german: { eng: "germ3" } },
-  "-M9OhzLPDtgdl7DV38m1": { german: { eng: "germ4" } },
-};
 
-const mappy = Object.entries(words).map(([key, obj]) => {
-  return obj["german"];
-});
 
-console.log(mappy);
