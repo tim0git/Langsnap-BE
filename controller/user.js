@@ -32,19 +32,13 @@ exports.createNewUser = async (req, res, next) => {
     const result = await firebase
       .auth()
       .createUserWithEmailAndPassword(email, password);
-
     const uid = result.user.uid;
-
     const token = await admin.auth().createCustomToken(uid);
-
     const user = {
       name,
       email,
     };
-
     usersRef.child(uid).set(user);
-    // create user in database..
-    // Send back token and user profile from database...
     res.status(201).send({ token: token, user: user });
   } catch ({ code, message }) {
     next({ code: code, message: message });
@@ -54,27 +48,27 @@ exports.createNewUser = async (req, res, next) => {
 exports.saveWordsToUserID = (req, res, next) => {
   const { language, englishWord, translatedWord } = req.body;
   const { uid } = req;
-
   const newWord = {
     [language]: {
       [englishWord]: translatedWord,
     },
   };
-
   ref = database.ref("users/" + uid);
-
   const newPostKey = ref.push().key;
-
   const updates = {};
   updates["/words/" + newPostKey] = newWord;
   ref.update(updates);
 
   ref.child("words").once("value", (snapShot) => {
-    console.log(snapShot.val());
+    const wordsList = snapShot.val()
+    res.status(200).send({ wordsList: wordsList});
   });
-
-  res.status(200).send({ message: "wip on routes" });
 };
 
 
-
+// {
+// 	"englishWord":"cat",
+// 	"language":"German",
+// 	"translatedWord":"die katze1"
+// }
+// /api/user/words

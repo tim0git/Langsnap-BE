@@ -1,6 +1,14 @@
 const firebase = require("firebase");
 const admin = require("firebase-admin");
+const serviceAccount = require("../config/pointtranslate-da844-firebase-adminsdk-prgku-17a5c09beb.json");
 
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://pointtranslate-da844.firebaseio.com",
+  });
+}
+const database = admin.database();
 //sign user in. FireBase Auth.
 exports.signinUser = (req, res, next) => {
   const { password, email } = req.body;
@@ -14,7 +22,11 @@ exports.signinUser = (req, res, next) => {
         .then(function (customToken) {
           //console.log(customToken);
           // either send back the profile or have a onChange event on the front end that listens for a change in the token and then fetches the profile associated with it?
-          res.status(200).send({ token: customToken });
+          ref = database.ref("users/" + uid);
+          ref.once("value", (snapShot) => {
+            const user = snapShot.val();
+            res.status(200).send({ token: customToken, user: user });
+          });
         });
     })
     .catch(({ code, message }) => {
