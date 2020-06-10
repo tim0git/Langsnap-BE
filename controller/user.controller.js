@@ -10,6 +10,7 @@ if (!admin.apps.length) {
 }
 const database = admin.database();
 const usersRef = database.ref("/users");
+const { createUser, generateToken } = require("../models/firebase.model");
 
 // create new user. FireBase Auth.
 exports.createNewUser = async (req, res, next) => {
@@ -29,17 +30,15 @@ exports.createNewUser = async (req, res, next) => {
     });
 
   try {
-    const result = await firebase
-      .auth()
-      .createUserWithEmailAndPassword(email, password);
-    const uid = result.user.uid;
-    const token = await admin.auth().createCustomToken(uid);
-    const user = {
+    const userNew = await createUser(email, password);
+    const { uid } = userNew.user;
+    const token = await generateToken(uid);
+    const newUser = {
       name,
       email,
     };
-    usersRef.child(uid).set(user);
-    res.status(201).send({ token: token, user: user });
+    usersRef.child(uid).set(newUser);
+    res.status(201).send({ token: token, user: newUser });
   } catch ({ code, message }) {
     next({ code: code, message: message });
   }
