@@ -40,12 +40,13 @@ describe("POST /api/auth", () => {
           .post("/api/auth")
           .send({
             password: "1234567",
-            email: "testperm@icloud.com",
+            email: "postmanPat1@gmail.com",
           })
           .expect(200)
           .then(({ body }) => {
             expect(body.token).to.be.a("string");
-            expect(body).to.contain.property("token");
+            expect(body).to.have.all.keys("token", "user");
+            expect(body.user).to.have.all.keys("email", "name", "words");
             done();
           })
           .catch((err) => done(err));
