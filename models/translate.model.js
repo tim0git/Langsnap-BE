@@ -6,11 +6,11 @@ exports.fetchTranslatedWords = (word, langpair) => {
   });
 };
 
-exports.fetchAssociatedWords = (apiKeyFixed, text, lang) => {
+exports.fetchAssociatedWords = (apiKeyFixed, text, lang, filter) => {
   return axios.get(
     "https://api.wordassociations.net/associations/v1.0/json/search",
     {
-      params: { apiKey: apiKeyFixed, text: text, lang: lang },
+      params: { apiKey: apiKeyFixed, text: text, lang: lang, pos: filter },
     }
   );
 };
