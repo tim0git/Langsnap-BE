@@ -3,6 +3,11 @@ const admin = require("firebase-admin");
 const { app, server } = require("../server");
 const request = require("supertest");
 //const { testUsers } = require("../config/passwords");
+const {
+  createUser,
+  generateToken,
+  signIn,
+} = require("../models/firebase.model");
 
 //Chai config,
 const expect = require("chai").expect;
@@ -173,40 +178,34 @@ describe("POST /api/auth", () => {
 
     describe("test create a new user. FireBase Auth.", () => {
       let globalToken = "";
-      before(async () => {
-        try {
-          const email = "testyAutoSignIn@gmail.com";
-          const password = "1234567";
-          const res = await firebase
-            .auth()
-            .createUserWithEmailAndPassword(email, password);
-          const uid = res.user.uid;
-          const token = await admin.auth().createCustomToken(uid);
-          return (globalToken = token);
-        } catch (error) {
-          return error;
-        }
-      });
+      let globalUid = "";
 
-      after((done) => {
+      before("Create User and set Gobal Token", async () => {
         const email = "testyAutoSignIn@gmail.com";
         const password = "1234567";
-        //ensure user is logged in...
-        firebase
-          .auth()
-          .signInWithEmailAndPassword(email, password)
-          .then((res) => {
-            const { uid } = res.user;
-            //assign loggedin user to current user
-            const user = firebase.auth().currentUser;
-            //delete current user
-            user.delete().catch((error) => {
-              done(error);
-              // delete from realtimeDB
-            });
-          });
+
+        const res = await createUser(email, password);
+
+        const uid = res.user.uid;
+
+        const token = await generateToken(uid);
+
+        globalToken = token;
+        globalUid = uid;
+      });
+
+      after("Delete user testyAutoSignIn", async () => {
+        const email = "testyAutoSignIn@gmail.com";
+        const password = "1234567";
+
+        await signIn(email, password);
+
+        const user = await firebase.auth().currentUser;
+
+        await user.delete().catch((error) => {
+          done(error);
+        });
         server.close();
-        done();
       });
 
       it("should be able to access routes with token from sign up", (done) => {

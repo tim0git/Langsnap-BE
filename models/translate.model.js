@@ -14,3 +14,4 @@ exports.fetchAssociatedWords = (apiKeyFixed, text, lang) => {
     }
   );
 };
+

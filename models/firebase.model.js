@@ -22,3 +22,46 @@ exports.generateToken = async (uid) => {
   const token = await admin.auth().createCustomToken(uid);
   return token;
 };
+
+exports.signIn = async (email, password) => {
+  const userInfo = await firebase
+    .auth()
+    .signInWithEmailAndPassword(email, password);
+  const uid = userInfo.user.uid;
+  return uid;
+};
+
+exports.signInToken = async (token) => {
+  const authorised = await firebase.auth().signInWithCustomToken(token);
+  return authorised;
+};
+
+exports.getUserProfile = async (uid) => {
+  ref = database.ref("users/" + uid);
+  return ref.once("value", (snapShot) => {
+    return snapShot.val();
+  });
+};
+
+exports.createUserDB = async (newUser, uid) => {
+  usersRef.child(uid).set(newUser);
+};
+
+exports.saveWordToUserDB = async (uid, newWord) => {
+  ref = database.ref("users/" + uid);
+
+  const newPostKey = ref.push().key;
+
+  const updates = {};
+
+  updates["/words/" + newPostKey] = newWord;
+
+  ref.update(updates);
+
+  const wordsList = await ref.child("words").once("value", (snapShot) => {
+    const wordsList = snapShot.val();
+    return wordsList;
+  });
+
+  return wordsList;
+};

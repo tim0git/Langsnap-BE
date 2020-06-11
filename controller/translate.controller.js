@@ -1,16 +1,17 @@
-const axios = require("axios");
 const {
   fetchAssociatedWords,
   fetchTranslatedWords,
 } = require("../models/translate.model");
 
-//call to translated word api
 exports.translateWord = (req, res, next) => {
   const { word, langpair } = req.body;
   const valid = /^[a-zA-Z\s]*$/;
+
   if (!valid.test(word)) return next({ status: 400, message: "Invalid word." });
+
   fetchTranslatedWords(word, langpair).then(({ data }) => {
     const { translatedText } = data.responseData;
+
     if (data.responseStatus !== 200) {
       next({
         status: data.responseStatus,
@@ -21,12 +22,13 @@ exports.translateWord = (req, res, next) => {
       res.send({ message: translatedText });
     }
   });
-}; //done returns the translated word
+};
 
-//call to word associaton api
+
 exports.associationsWord = (req, res, next) => {
   const { text, lang, filter } = req.body;
   const apiKeyFixed = "82c44cd0-21d2-4e27-b134-6c24d6e55e6c";
+
   fetchAssociatedWords(apiKeyFixed, text, lang)
     .then(({ data: { response } }) => {
       if (filter) {
@@ -48,4 +50,4 @@ exports.associationsWord = (req, res, next) => {
     .catch(({ response: { status, statusText } }) => {
       next({ status: status, message: statusText });
     });
-}; //done return an array of 3 nouns.
+}; 
