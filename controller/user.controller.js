@@ -37,7 +37,9 @@ exports.createNewUser = async (req, res, next) => {
       name,
       email,
     };
+    // Move to model
     usersRef.child(uid).set(newUser);
+    //
     res.status(201).send({ token: token, user: newUser });
   } catch ({ code, message }) {
     next({ code: code, message: message });
@@ -58,6 +60,7 @@ exports.saveWordsToUserID = (req, res, next) => {
       [englishWord]: translatedWord,
     },
   };
+  // To be moved to model
   ref = database.ref("users/" + uid);
   const newPostKey = ref.push().key;
   const updates = {};
@@ -66,5 +69,6 @@ exports.saveWordsToUserID = (req, res, next) => {
   const wordsList = ref.child("words").once("value", (snapShot) => {
     return snapShot.val();
   });
+  //
   res.status(200).send({ wordsList: wordsList });
 };

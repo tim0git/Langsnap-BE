@@ -11,7 +11,7 @@ if (!admin.apps.length) {
 }
 const database = admin.database();
 
-//sign user in. FireBase Auth.
+
 exports.signinUser = async (req, res, next) => {
   const { password, email } = req.body;
   if (!password)
@@ -26,33 +26,38 @@ exports.signinUser = async (req, res, next) => {
       message: "The email address is badly formatted.",
     });
   try {
+    // Refactor and move to model
     const userInfo = await firebase
       .auth()
       .signInWithEmailAndPassword(email, password);
     const uid = userInfo.user.uid;
+    
     const customToken = await admin.auth().createCustomToken(uid);
     ref = database.ref("users/" + uid);
     ref.once("value", (snapShot) => {
       const user = snapShot.val();
       res.status(200).send({ token: customToken, user: user });
     });
+    //
   } catch ({ code, message }) {
     next({ code: code, message: message });
   }
-}; //done no further work required
+};
 
-// Tested and working auth checker,
+
 exports.auth = async (req, res, next) => {
   const token = req.header("x-auth-token");
   if (!token) {
     return res.status(401).send({ message: "no token, authorisation denied" });
   }
   try {
+    //
     const authorised = await firebase.auth().signInWithCustomToken(token);
     req.uid = authorised.user.uid;
     req.email = authorised.user.email;
+    //
     next();
   } catch (err) {
     res.status(401).send({ message: "token is not valid" });
   }
-}; // done,
+};

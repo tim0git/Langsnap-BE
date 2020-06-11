@@ -46,8 +46,6 @@ exports.associationsWord = (req, res, next) => {
       }
     })
     .catch(({ response: { status, statusText } }) => {
-      console.log(res);
-
       next({ status: status, message: statusText });
     });
 }; //done return an array of 3 nouns.
