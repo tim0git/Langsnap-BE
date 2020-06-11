@@ -21,9 +21,8 @@ describe("GET /api", () => {
     request(app)
       .get("/api")
       .then(({ body }) => {
-        expect(body).to.contain.property("message");
-        expect(body.message).to.be.a("string");
-        expect(body.message).to.deep.equal("working GET /api");
+        expect(body).to.contain.property("availableRoutes");
+        expect(body.availableRoutes).to.be.an("object");
         done();
       })
       .catch((err) => done(err));

@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+  send404,
   handleCustomError,
   handleInternalError,
   handleFirebase_Error,
@@ -26,6 +27,7 @@ app.use(express.json({ extended: false }));
 
 // working api route 06/06/2020
 app.use("/api", apiRouter);
+app.use(send404);
 
 //error handelling.
 app.use(handleFirebase_Error);

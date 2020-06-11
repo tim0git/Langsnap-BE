@@ -1,12 +1,9 @@
 const authRouter = require("express").Router();
 const { signinUser, auth } = require("../controller/auth.controller");
-
-authRouter.route("/").get((req, res) => {
-  res.send({ message: "working GET /api/auth" });
-});
+const { handle405s } = require("../error/errorHandling");
 
 //signIn user
-authRouter.route("/").post(signinUser);
+authRouter.route("/").post(signinUser).all(handle405s);
 
 //test if auth works on private routes
 authRouter.route("/test").get(auth, (req, res) => {

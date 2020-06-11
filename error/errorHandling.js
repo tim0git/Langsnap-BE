@@ -1,12 +1,12 @@
 exports.send404 = (req, res, next) => {
   res.status(404).send({
     availableRoutes: {
-      message: "tbc",
+      message: "Resource not found.",
     },
   });
 };
 
-exports.handle405 = (req, res, next) => {
+exports.handle405s = (req, res, next) => {
   res.status(405).send({ msg: "method not allowed" });
 };
 

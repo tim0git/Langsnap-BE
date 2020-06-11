@@ -1,13 +1,10 @@
 const userRouter = require("express").Router();
 const { wordsRouter } = require("./words.router");
 const { createNewUser } = require("../controller/user.controller");
-
-userRouter.route("/").get((req, res) => {
-  res.send({ message: "working GET /api/user" });
-});
+const { handle405s } = require("../error/errorHandling");
 
 //signIn user
-userRouter.route("/").post(createNewUser);
+userRouter.route("/").post(createNewUser).all(handle405s);
 userRouter.use("/words", wordsRouter);
 
 module.exports = { userRouter };
