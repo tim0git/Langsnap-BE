@@ -24,30 +24,35 @@ exports.translateWord = (req, res, next) => {
   });
 };
 
-
 exports.associationsWord = (req, res, next) => {
   const { text, lang, filter } = req.body;
   const apiKeyFixed = "82c44cd0-21d2-4e27-b134-6c24d6e55e6c";
 
-  fetchAssociatedWords(apiKeyFixed, text, lang)
+  if (!text || !lang) {
+    return next({
+      status: 400,
+      message: "Must have a valid language and input text.",
+    });
+  }
+
+  const wordTypes = ["noun", "adjective", "verb", "adverb"];
+  const validWordType = wordTypes.includes(filter);
+
+  if (filter && !validWordType) {
+    return res
+      .status(400)
+      .send({ message: "Filter must equal noun, adjective, verb or adverb" });
+  }
+
+  fetchAssociatedWords(apiKeyFixed, text, lang, filter)
     .then(({ data: { response } }) => {
-      if (filter) {
-        const wordsArray = response[0].items
-          .filter((word) => word.pos !== filter)
-          .slice(0, 3);
-        const associatedWord = response[0].text;
-        res
-          .status(200)
-          .send({ message: { word: associatedWord, wordsArray: wordsArray } });
-      } else {
-        const wordsArray = response[0].items.slice(0, 3);
-        const associatedWord = response[0].text;
-        res
-          .status(200)
-          .send({ message: { word: associatedWord, wordsArray: wordsArray } });
-      }
+      let wordsArray = response[0].items.slice(0, 3);
+      const associatedWord = response[0].text;
+      res.status(200).send({
+        message: { word: associatedWord, wordsArray: wordsArray },
+      });
     })
     .catch(({ response: { status, statusText } }) => {
       next({ status: status, message: statusText });
     });
-}; 
+};

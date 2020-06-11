@@ -699,13 +699,14 @@ describe("POST /api/associations", () => {
         })
         .catch((err) => done(err));
     });
+
     it("responds with an array of 3 words with the filter applied", (done) => {
       request(app)
         .post("/api/associations")
         .send({
           text: "house",
           lang: "en",
-          filter: "noun",
+          filter: "adjective",
         })
         .expect(200)
         .then(({ body }) => {
@@ -716,12 +717,13 @@ describe("POST /api/associations", () => {
           expect(body.message.wordsArray).to.have.lengthOf(3);
           expect(body.message.wordsArray).to.be.an.instanceof(Array);
           body.message.wordsArray.forEach((word) => {
-            expect(word.pos).to.not.equal("noun");
+            expect(word.pos).to.equal("adjective");
           });
           done();
         })
         .catch((err) => done(err));
     });
+
     it("responds with an array of 3 words with the filter equal to null ", (done) => {
       request(app)
         .post("/api/associations")
@@ -741,6 +743,130 @@ describe("POST /api/associations", () => {
           body.message.wordsArray.forEach((word) => {
             expect(word.item).to.be.a("string");
           });
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status: 200. Word given is in the wrong language", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "Käse",
+          lang: "en",
+          filter: "",
+        })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.message.wordsArray).to.have.lengthOf(0);
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status :400. Missing text property", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          lang: "en",
+          filter: "",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Must have a valid language and input text."
+          );
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status :400. Missing lang property", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "house",
+          filter: "",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Must have a valid language and input text."
+          );
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status :400. text property is empty string", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "",
+          lang: "en",
+          filter: "",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Must have a valid language and input text."
+          );
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status :400. lang property is empty string", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "house",
+          lang: "",
+          filter: "",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Must have a valid language and input text."
+          );
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status: 400. filter isn't valid", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "chair",
+          lang: "en",
+          filter: "womble",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Filter must equal noun, adjective, verb or adverb"
+          );
+
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status: 400. filter isn't a string", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "chair",
+          lang: "en",
+          filter: 123,
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Filter must equal noun, adjective, verb or adverb"
+          );
+
           done();
         })
         .catch((err) => done(err));
