@@ -66,9 +66,8 @@ exports.saveWordsToUserID = (req, res, next) => {
   const updates = {};
   updates["/words/" + newPostKey] = newWord;
   ref.update(updates);
-  const wordsList = ref.child("words").once("value", (snapShot) => {
-    return snapShot.val();
+  ref.child("words").once("value", (snapShot) => {
+    const wordsList = snapShot.val();
+    res.status(200).send({ wordsList: wordsList });
   });
-  //
-  res.status(200).send({ wordsList: wordsList });
 };
