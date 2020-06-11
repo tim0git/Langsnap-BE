@@ -42,12 +42,11 @@ describe("GET /api", () => {
 describe("POST /api/auth", () => {
   describe("/", () => {
     describe("tests logging into a users account. FireBase Auth.", () => {
-      after((done) => {
+      after(() => {
         server.close();
-        done();
       });
 
-      it("responds with a token if correct email and password are provided", (done) => {
+      it("responds with a token if correct email and password are provided", () => {
         request(app)
           .post("/api/auth")
           .send({
@@ -59,13 +58,11 @@ describe("POST /api/auth", () => {
             expect(body.token).to.be.a("string");
             expect(body).to.have.all.keys("token", "user");
             expect(body.user).to.have.all.keys("email", "name", "words");
-            done();
-          })
-          .catch((err) => done(err));
+          });
       });
 
       //error checking
-      it("responds with error if incorrect password is provided", (done) => {
+      it("responds with error if incorrect password is provided", () => {
         request(app)
           .post("/api/auth")
           .send({
@@ -79,9 +76,7 @@ describe("POST /api/auth", () => {
             expect(body.message).to.deep.equal(
               "The password must be 6 characters long or more."
             );
-            done();
-          })
-          .catch((err) => done(err));
+          });
       });
 
       it("responds with error if incorrect email is provided", (done) => {
@@ -136,6 +131,19 @@ describe("POST /api/auth", () => {
           })
           .catch((err) => done(err));
       });
+    });
+
+    it("INVALID METHODS", () => {
+      const invalidMethods = ["patch", "get", "put", "delete"];
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/auth")
+          .expect(405)
+          .then(({ body: { message } }) => {
+            expect(message).to.equal("method not allowed");
+          });
+      });
+      return Promise.all(requests);
     });
   });
 
@@ -368,6 +376,19 @@ describe("POST /api/user", () => {
         server.close();
       });
     });
+
+    it("INVALID METHODS", () => {
+      const invalidMethods = ["patch", "get", "put", "delete"];
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/user")
+          .expect(405)
+          .then(({ body: { message } }) => {
+            expect(message).to.equal("method not allowed");
+          });
+      });
+      return Promise.all(requests);
+    });
   });
 
   describe("/words", () => {
@@ -540,6 +561,19 @@ describe("POST /api/user", () => {
           .catch((err) => done(err));
       });
     });
+
+    it("INVALID METHODS", () => {
+      const invalidMethods = ["patch", "get", "put", "delete"];
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/user/words")
+          .expect(405)
+          .then(({ body: { message } }) => {
+            expect(message).to.equal("method not allowed");
+          });
+      });
+      return Promise.all(requests);
+    });
   });
 });
 
@@ -667,6 +701,19 @@ describe("POST /api/translate", () => {
         })
         .catch((err) => done(err));
     });
+  });
+
+  it("INVALID METHODS", () => {
+    const invalidMethods = ["patch", "get", "put", "delete"];
+    const requests = invalidMethods.map((method) => {
+      return request(app)
+        [method]("/api/translate")
+        .expect(405)
+        .then(({ body: { message } }) => {
+          expect(message).to.equal("method not allowed");
+        });
+    });
+    return Promise.all(requests);
   });
 });
 
@@ -870,6 +917,19 @@ describe("POST /api/associations", () => {
           done();
         })
         .catch((err) => done(err));
+    });
+
+    it("INVALID METHODS", () => {
+      const invalidMethods = ["patch", "get", "put", "delete"];
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/associations")
+          .expect(405)
+          .then(({ body: { message } }) => {
+            expect(message).to.equal("method not allowed");
+          });
+      });
+      return Promise.all(requests);
     });
   });
 });
