@@ -10,4 +10,5 @@ apiRouter.use("/user", userRouter);
 apiRouter.use("/translate", translateRouter); //done
 apiRouter.use("/associations", associationsRouter); //done
 apiRouter.route("/").all(serveEndpoints);
+
 module.exports = { apiRouter };

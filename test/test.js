@@ -17,12 +17,12 @@ describe("GET /api", () => {
     done();
   });
 
-  it("responds with message", (done) => {
+  it("responds with all available endpoints", (done) => {
     request(app)
       .get("/api")
       .then(({ body }) => {
-        expect(body).to.contain.property("availableRoutes");
-        expect(body.availableRoutes).to.be.an("object");
+        expect(body).to.contain.property("availableEndpoints");
+        expect(body.availableEndpoints).to.be.an("object");
         done();
       })
       .catch((err) => done(err));
