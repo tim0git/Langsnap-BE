@@ -27,17 +27,26 @@ describe("GET /api", () => {
       })
       .catch((err) => done(err));
   });
+
+  it("status: 404 responds with 'Resource not found.' if page doesn't exist", (done) => {
+    request(app)
+      .get("/incorrect_path")
+      .expect(404)
+      .then(({ body: { availableRoutes } }) => {
+        expect(availableRoutes.message).to.deep.equal("Resource not found.");
+        done();
+      });
+  });
 });
 
 describe("POST /api/auth", () => {
   describe("/", () => {
     describe("tests logging into a users account. FireBase Auth.", () => {
-      after((done) => {
+      after(() => {
         server.close();
-        done();
       });
 
-      it("responds with a token if correct email and password are provided", (done) => {
+      it("responds with a token if correct email and password are provided", () => {
         request(app)
           .post("/api/auth")
           .send({
@@ -49,13 +58,11 @@ describe("POST /api/auth", () => {
             expect(body.token).to.be.a("string");
             expect(body).to.have.all.keys("token", "user");
             expect(body.user).to.have.all.keys("email", "name", "words");
-            done();
-          })
-          .catch((err) => done(err));
+          });
       });
 
       //error checking
-      it("responds with error if incorrect password is provided", (done) => {
+      it("responds with error if incorrect password is provided", () => {
         request(app)
           .post("/api/auth")
           .send({
@@ -69,9 +76,7 @@ describe("POST /api/auth", () => {
             expect(body.message).to.deep.equal(
               "The password must be 6 characters long or more."
             );
-            done();
-          })
-          .catch((err) => done(err));
+          });
       });
 
       it("responds with error if incorrect email is provided", (done) => {
@@ -126,6 +131,19 @@ describe("POST /api/auth", () => {
           })
           .catch((err) => done(err));
       });
+    });
+
+    it("INVALID METHODS", () => {
+      const invalidMethods = ["patch", "get", "put", "delete"];
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/auth")
+          .expect(405)
+          .then(({ body: { message } }) => {
+            expect(message).to.equal("method not allowed");
+          });
+      });
+      return Promise.all(requests);
     });
   });
 
@@ -358,6 +376,19 @@ describe("POST /api/user", () => {
         server.close();
       });
     });
+
+    it("INVALID METHODS", () => {
+      const invalidMethods = ["patch", "get", "put", "delete"];
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/user")
+          .expect(405)
+          .then(({ body: { message } }) => {
+            expect(message).to.equal("method not allowed");
+          });
+      });
+      return Promise.all(requests);
+    });
   });
 
   describe("/words", () => {
@@ -530,6 +561,19 @@ describe("POST /api/user", () => {
           .catch((err) => done(err));
       });
     });
+
+    it("INVALID METHODS", () => {
+      const invalidMethods = ["patch", "get", "put", "delete"];
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/user/words")
+          .expect(405)
+          .then(({ body: { message } }) => {
+            expect(message).to.equal("method not allowed");
+          });
+      });
+      return Promise.all(requests);
+    });
   });
 });
 
@@ -658,6 +702,19 @@ describe("POST /api/translate", () => {
         .catch((err) => done(err));
     });
   });
+
+  it("INVALID METHODS", () => {
+    const invalidMethods = ["patch", "get", "put", "delete"];
+    const requests = invalidMethods.map((method) => {
+      return request(app)
+        [method]("/api/translate")
+        .expect(405)
+        .then(({ body: { message } }) => {
+          expect(message).to.equal("method not allowed");
+        });
+    });
+    return Promise.all(requests);
+  });
 });
 
 describe("POST /api/associations", () => {
@@ -689,13 +746,14 @@ describe("POST /api/associations", () => {
         })
         .catch((err) => done(err));
     });
+
     it("responds with an array of 3 words with the filter applied", (done) => {
       request(app)
         .post("/api/associations")
         .send({
           text: "house",
           lang: "en",
-          filter: "noun",
+          filter: "adjective",
         })
         .expect(200)
         .then(({ body }) => {
@@ -706,12 +764,13 @@ describe("POST /api/associations", () => {
           expect(body.message.wordsArray).to.have.lengthOf(3);
           expect(body.message.wordsArray).to.be.an.instanceof(Array);
           body.message.wordsArray.forEach((word) => {
-            expect(word.pos).to.not.equal("noun");
+            expect(word.pos).to.equal("adjective");
           });
           done();
         })
         .catch((err) => done(err));
     });
+
     it("responds with an array of 3 words with the filter equal to null ", (done) => {
       request(app)
         .post("/api/associations")
@@ -734,6 +793,143 @@ describe("POST /api/associations", () => {
           done();
         })
         .catch((err) => done(err));
+    });
+
+    it("status: 200. Word given is in the wrong language", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "Käse",
+          lang: "en",
+          filter: "",
+        })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.message.wordsArray).to.have.lengthOf(0);
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status :400. Missing text property", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          lang: "en",
+          filter: "",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Must have a valid language and input text."
+          );
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status :400. Missing lang property", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "house",
+          filter: "",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Must have a valid language and input text."
+          );
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status :400. text property is empty string", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "",
+          lang: "en",
+          filter: "",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Must have a valid language and input text."
+          );
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status :400. lang property is empty string", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "house",
+          lang: "",
+          filter: "",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Must have a valid language and input text."
+          );
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status: 400. filter isn't valid", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "chair",
+          lang: "en",
+          filter: "womble",
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Filter must equal noun, adjective, verb or adverb"
+          );
+
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("status: 400. filter isn't a string", (done) => {
+      request(app)
+        .post("/api/associations")
+        .send({
+          text: "chair",
+          lang: "en",
+          filter: 123,
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.message).to.deep.equal(
+            "Filter must equal noun, adjective, verb or adverb"
+          );
+
+          done();
+        })
+        .catch((err) => done(err));
+    });
+
+    it("INVALID METHODS", () => {
+      const invalidMethods = ["patch", "get", "put", "delete"];
+      const requests = invalidMethods.map((method) => {
+        return request(app)
+          [method]("/api/associations")
+          .expect(405)
+          .then(({ body: { message } }) => {
+            expect(message).to.equal("method not allowed");
+          });
+      });
+      return Promise.all(requests);
     });
   });
 });

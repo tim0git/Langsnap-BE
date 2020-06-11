@@ -7,7 +7,7 @@ exports.send404 = (req, res, next) => {
 };
 
 exports.handle405s = (req, res, next) => {
-  res.status(405).send({ msg: "method not allowed" });
+  res.status(405).send({ message: "method not allowed" });
 };
 
 exports.handleFirebase_Error = (err, req, res, next) => {
