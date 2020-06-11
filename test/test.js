@@ -1,12 +1,10 @@
-const firebase = require("firebase");
-const admin = require("firebase-admin");
 const { app, server } = require("../server");
 const request = require("supertest");
-//const { testUsers } = require("../config/passwords");
 const {
   createUser,
   generateToken,
   signIn,
+  deleteCurrentUser,
 } = require("../models/firebase.model");
 
 //Chai config,
@@ -140,23 +138,16 @@ describe("POST /api/auth", () => {
         done();
       });
 
-      before((done) => {
+      before("Generate token for test routes", async () => {
         const email = "testasync@gmail.com";
         const password = "1234567";
-
-        firebase
-          .auth()
-          .signInWithEmailAndPassword(email, password)
-          .then(({ user: { uid } }) => {
-            admin
-              .auth()
-              .createCustomToken(uid)
-              .then((customToken) => {
-                token = customToken;
-                done();
-              });
-          })
-          .catch((err) => done(err));
+        try {
+          const uid = await signIn(email, password);
+          const customToken = await generateToken(uid);
+          token = customToken;
+        } catch (error) {
+          console.log(error);
+        }
       });
 
       it("responds with a users email on a test auth route", (done) => {
@@ -183,28 +174,30 @@ describe("POST /api/auth", () => {
       before("Create User and set Gobal Token", async () => {
         const email = "testyAutoSignIn@gmail.com";
         const password = "1234567";
+        try {
+          const res = await createUser(email, password);
 
-        const res = await createUser(email, password);
+          const uid = res.user.uid;
 
-        const uid = res.user.uid;
+          const token = await generateToken(uid);
 
-        const token = await generateToken(uid);
-
-        globalToken = token;
-        globalUid = uid;
+          globalToken = token;
+          globalUid = uid;
+        } catch (error) {
+          console.log(error);
+        }
       });
 
       after("Delete user testyAutoSignIn", async () => {
         const email = "testyAutoSignIn@gmail.com";
         const password = "1234567";
+        try {
+          await signIn(email, password);
 
-        await signIn(email, password);
-
-        const user = await firebase.auth().currentUser;
-
-        await user.delete().catch((error) => {
-          done(error);
-        });
+          await deleteCurrentUser();
+        } catch (error) {
+          console.log(error);
+        }
         server.close();
       });
 
@@ -225,27 +218,16 @@ describe("POST /api/auth", () => {
 describe("POST /api/user", () => {
   describe("/", () => {
     describe("create a new user. FireBase Auth.", () => {
-      afterEach((done) => {
+      afterEach("Delete test user after test", async () => {
         const password = "1234567";
         const email = "test@icloud.com";
-        //ensure user is logged in...
-        firebase
-          .auth()
-          .signInWithEmailAndPassword(email, password)
-          .then((res) => {
-            const { uid } = res.user;
-            //assign loggedin user to current user
-            const user = firebase.auth().currentUser;
-            //delete current user
-            user.delete().catch((error) => {
-              done(error);
-              // delete from realtimeDB
-            });
-            const database = admin.database();
-            const usersRef = database.ref("/users/" + uid);
-            usersRef.remove();
-          });
-        done();
+        try {
+          const uid = await signIn(email, password);
+          await deleteCurrentUser(uid);
+        } catch (error) {
+          console.log(error);
+        }
+        server.close();
       });
 
       it("should create a user when passed an email address and password", (done) => {
@@ -386,14 +368,11 @@ describe("POST /api/user", () => {
         try {
           const email = "postmanPat10@gmail.com";
           const password = "1234567";
-          const res = await firebase
-            .auth()
-            .signInWithEmailAndPassword(email, password);
-          const uid = res.user.uid;
-          const token = await admin.auth().createCustomToken(uid);
-          return (globalToken = token);
+          const uid = await signIn(email, password);
+          const token = await generateToken(uid);
+          globalToken = token;
         } catch (error) {
-          return error;
+          console.log(error);
         }
       });
 

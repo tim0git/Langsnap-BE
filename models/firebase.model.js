@@ -65,3 +65,15 @@ exports.saveWordToUserDB = async (uid, newWord) => {
 
   return wordsList;
 };
+
+exports.deleteCurrentUser = async (uid) => {
+  const user = await firebase.auth().currentUser;
+  await user.delete().catch((error) => {
+    done(error);
+  });
+  if (uid) {
+    const database = await admin.database();
+    const usersRef = await database.ref("/users/" + uid);
+    await usersRef.remove();
+  }
+};
