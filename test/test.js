@@ -27,6 +27,16 @@ describe("GET /api", () => {
       })
       .catch((err) => done(err));
   });
+
+  it("status: 404 responds with 'Resource not found.' if page doesn't exist", (done) => {
+    request(app)
+      .get("/incorrect_path")
+      .expect(404)
+      .then(({ body: { availableRoutes } }) => {
+        expect(availableRoutes.message).to.deep.equal("Resource not found.");
+        done();
+      });
+  });
 });
 
 describe("POST /api/auth", () => {
