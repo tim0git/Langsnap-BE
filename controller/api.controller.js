@@ -32,11 +32,20 @@ exports.serveEndpoints = (req, res, next) => {
         },
       },
       "POST /api/associations": {
-        description: "Retrieve a translated word.",
+        description:
+          "Retrieves 3 associated words for a given word. Can be filtered by word type.",
         "request format": {
           text: "example",
           lang: "en",
           filter: "null or adjective, verb or noun",
+        },
+      },
+      "POST /api/associations/game": {
+        description:
+          "Retrieves 3 associated words and returns them in an array with the original word included",
+        "request format": {
+          text: "example",
+          lang: "en",
         },
       },
     },
