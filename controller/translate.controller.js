@@ -46,10 +46,45 @@ exports.associationsWord = (req, res, next) => {
 
   fetchAssociatedWords(apiKeyFixed, text, lang, filter)
     .then(({ data: { response } }) => {
-      let wordsArray = response[0].items.slice(0, 3);
+      const wordsArray = response[0].items.slice(0, 3);
       const associatedWord = response[0].text;
       res.status(200).send({
         message: { word: associatedWord, wordsArray: wordsArray },
+      });
+    })
+    .catch(({ response: { status, statusText } }) => {
+      next({ status: status, message: statusText });
+    });
+};
+
+exports.associationsWordGame = (req, res, next) => {
+  const { text, lang } = req.body;
+  const apiKeyFixed = "82c44cd0-21d2-4e27-b134-6c24d6e55e6c";
+
+  if (!text || !lang) {
+    return next({
+      status: 400,
+      message: "Must have a valid language and input text.",
+    });
+  }
+
+  fetchAssociatedWords(apiKeyFixed, text, lang)
+    .then(({ data: { response } }) => {
+      const wordsArray = response[0].items.slice(0, 3);
+      const associatedWord = response[0].text;
+      const capitalised =
+        associatedWord.charAt(0).toUpperCase() + associatedWord.slice(1);
+
+      const justWords = wordsArray.map((wordObj) => {
+        return wordObj.item;
+      });
+
+      const randomIndex = Math.floor(Math.random() * justWords.length);
+
+      justWords.splice(randomIndex, 0, capitalised);
+
+      res.status(200).send({
+        message: { word: associatedWord, wordsArray: justWords },
       });
     })
     .catch(({ response: { status, statusText } }) => {
