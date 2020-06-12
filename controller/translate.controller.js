@@ -26,7 +26,7 @@ exports.translateWord = (req, res, next) => {
 
 exports.associationsWord = (req, res, next) => {
   const { text, lang, filter } = req.body;
-  const apiKeyFixed = "82c44cd0-21d2-4e27-b134-6c24d6e55e6c";
+  const apiKeyFixed = "c84ee5d6-e066-4675-8b57-94abd955b091";
 
   if (!text || !lang) {
     return next({
@@ -59,7 +59,7 @@ exports.associationsWord = (req, res, next) => {
 
 exports.associationsWordGame = (req, res, next) => {
   const { text, lang } = req.body;
-  const apiKeyFixed = "82c44cd0-21d2-4e27-b134-6c24d6e55e6c";
+  const apiKeyFixed = "c84ee5d6-e066-4675-8b57-94abd955b091";
 
   if (!text || !lang) {
     return next({
