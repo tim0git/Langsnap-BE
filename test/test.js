@@ -935,7 +935,6 @@ describe("POST /api/associations", () => {
     });
   });
 
-  // Reformat for GAME!
   describe("/game", () => {
     describe("tests that the route for game responds with associated words and original word", () => {
       after((done) => {
