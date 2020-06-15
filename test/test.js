@@ -32,8 +32,8 @@ describe("GET /api", () => {
     request(app)
       .get("/incorrect_path")
       .expect(404)
-      .then(({ body: { availableRoutes } }) => {
-        expect(availableRoutes.message).to.deep.equal("Resource not found.");
+      .then(({ body }) => {
+        expect(body.message).to.deep.equal("Resource not found.");
         done();
       });
   });

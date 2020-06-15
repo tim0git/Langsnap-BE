@@ -1,8 +1,6 @@
 exports.send404 = (req, res, next) => {
   res.status(404).send({
-    availableRoutes: {
-      message: "Resource not found.",
-    },
+    message: "Resource not found.",
   });
 };
 
