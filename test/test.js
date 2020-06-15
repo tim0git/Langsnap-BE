@@ -718,218 +718,333 @@ describe("POST /api/translate", () => {
 });
 
 describe("POST /api/associations", () => {
-  describe("tests association word api call. Responds with nouns only.", () => {
-    after((done) => {
-      server.close();
-      done();
-    });
-
-    it("responds with an array of 3 words", (done) => {
-      request(app)
-        .post("/api/associations")
-        .send({
-          text: "house",
-          lang: "en",
-        })
-        .expect(200)
-        .then(({ body }) => {
-          expect(body).to.an("object");
-          expect(body).to.contain.property("message");
-          expect(body.message).to.have.all.keys("word", "wordsArray");
-          expect(body.message.word).to.deep.equal("house");
-          expect(body.message.wordsArray).to.have.lengthOf(3);
-          expect(body.message.wordsArray).to.be.an.instanceof(Array);
-          body.message.wordsArray.forEach((word) => {
-            expect(word.item).to.be.a("string");
-          });
-          done();
-        })
-        .catch((err) => done(err));
-    });
-
-    it("responds with an array of 3 words with the filter applied", (done) => {
-      request(app)
-        .post("/api/associations")
-        .send({
-          text: "house",
-          lang: "en",
-          filter: "adjective",
-        })
-        .expect(200)
-        .then(({ body }) => {
-          expect(body).to.an("object");
-          expect(body).to.contain.property("message");
-          expect(body.message).to.have.all.keys("word", "wordsArray");
-          expect(body.message.word).to.deep.equal("house");
-          expect(body.message.wordsArray).to.have.lengthOf(3);
-          expect(body.message.wordsArray).to.be.an.instanceof(Array);
-          body.message.wordsArray.forEach((word) => {
-            expect(word.pos).to.equal("adjective");
-          });
-          done();
-        })
-        .catch((err) => done(err));
-    });
-
-    it("responds with an array of 3 words with the filter equal to null ", (done) => {
-      request(app)
-        .post("/api/associations")
-        .send({
-          text: "house",
-          lang: "en",
-          filter: "",
-        })
-        .expect(200)
-        .then(({ body }) => {
-          expect(body).to.an("object");
-          expect(body).to.contain.property("message");
-          expect(body.message).to.have.all.keys("word", "wordsArray");
-          expect(body.message.word).to.deep.equal("house");
-          expect(body.message.wordsArray).to.have.lengthOf(3);
-          expect(body.message.wordsArray).to.be.an.instanceof(Array);
-          body.message.wordsArray.forEach((word) => {
-            expect(word.item).to.be.a("string");
-          });
-          done();
-        })
-        .catch((err) => done(err));
-    });
-
-    it("status: 200. Word given is in the wrong language", (done) => {
-      request(app)
-        .post("/api/associations")
-        .send({
-          text: "Käse",
-          lang: "en",
-          filter: "",
-        })
-        .expect(200)
-        .then(({ body }) => {
-          expect(body.message.wordsArray).to.have.lengthOf(0);
-          done();
-        })
-        .catch((err) => done(err));
-    });
-
-    it("status :400. Missing text property", (done) => {
-      request(app)
-        .post("/api/associations")
-        .send({
-          lang: "en",
-          filter: "",
-        })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.message).to.deep.equal(
-            "Must have a valid language and input text."
-          );
-          done();
-        })
-        .catch((err) => done(err));
-    });
-
-    it("status :400. Missing lang property", (done) => {
-      request(app)
-        .post("/api/associations")
-        .send({
-          text: "house",
-          filter: "",
-        })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.message).to.deep.equal(
-            "Must have a valid language and input text."
-          );
-          done();
-        })
-        .catch((err) => done(err));
-    });
-
-    it("status :400. text property is empty string", (done) => {
-      request(app)
-        .post("/api/associations")
-        .send({
-          text: "",
-          lang: "en",
-          filter: "",
-        })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.message).to.deep.equal(
-            "Must have a valid language and input text."
-          );
-          done();
-        })
-        .catch((err) => done(err));
-    });
-
-    it("status :400. lang property is empty string", (done) => {
-      request(app)
-        .post("/api/associations")
-        .send({
-          text: "house",
-          lang: "",
-          filter: "",
-        })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.message).to.deep.equal(
-            "Must have a valid language and input text."
-          );
-          done();
-        })
-        .catch((err) => done(err));
-    });
-
-    it("status: 400. filter isn't valid", (done) => {
-      request(app)
-        .post("/api/associations")
-        .send({
-          text: "chair",
-          lang: "en",
-          filter: "womble",
-        })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.message).to.deep.equal(
-            "Filter must equal noun, adjective, verb or adverb"
-          );
-
-          done();
-        })
-        .catch((err) => done(err));
-    });
-
-    it("status: 400. filter isn't a string", (done) => {
-      request(app)
-        .post("/api/associations")
-        .send({
-          text: "chair",
-          lang: "en",
-          filter: 123,
-        })
-        .expect(400)
-        .then(({ body }) => {
-          expect(body.message).to.deep.equal(
-            "Filter must equal noun, adjective, verb or adverb"
-          );
-
-          done();
-        })
-        .catch((err) => done(err));
-    });
-
-    it("INVALID METHODS", () => {
-      const invalidMethods = ["patch", "get", "put", "delete"];
-      const requests = invalidMethods.map((method) => {
-        return request(app)
-          [method]("/api/associations")
-          .expect(405)
-          .then(({ body: { message } }) => {
-            expect(message).to.equal("method not allowed");
-          });
+  describe("/", () => {
+    describe("tests association word api call. Responds with nouns only.", () => {
+      after((done) => {
+        server.close();
+        done();
       });
-      return Promise.all(requests);
+
+      it("responds with an array of 3 words", (done) => {
+        request(app)
+          .post("/api/associations")
+          .send({
+            text: "house",
+            lang: "en",
+          })
+          .expect(200)
+          .then(({ body }) => {
+            expect(body).to.an("object");
+            expect(body).to.contain.property("message");
+            expect(body.message).to.have.all.keys("word", "wordsArray");
+            expect(body.message.word).to.deep.equal("house");
+            expect(body.message.wordsArray).to.have.lengthOf(3);
+            expect(body.message.wordsArray).to.be.an.instanceof(Array);
+            body.message.wordsArray.forEach((word) => {
+              expect(word.item).to.be.a("string");
+            });
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("responds with an array of 3 words with the filter applied", (done) => {
+        request(app)
+          .post("/api/associations")
+          .send({
+            text: "house",
+            lang: "en",
+            filter: "adjective",
+          })
+          .expect(200)
+          .then(({ body }) => {
+            expect(body).to.an("object");
+            expect(body).to.contain.property("message");
+            expect(body.message).to.have.all.keys("word", "wordsArray");
+            expect(body.message.word).to.deep.equal("house");
+            expect(body.message.wordsArray).to.have.lengthOf(3);
+            expect(body.message.wordsArray).to.be.an.instanceof(Array);
+            body.message.wordsArray.forEach((word) => {
+              expect(word.pos).to.equal("adjective");
+            });
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("responds with an array of 3 words with the filter equal to null ", (done) => {
+        request(app)
+          .post("/api/associations")
+          .send({
+            text: "house",
+            lang: "en",
+            filter: "",
+          })
+          .expect(200)
+          .then(({ body }) => {
+            expect(body).to.an("object");
+            expect(body).to.contain.property("message");
+            expect(body.message).to.have.all.keys("word", "wordsArray");
+            expect(body.message.word).to.deep.equal("house");
+            expect(body.message.wordsArray).to.have.lengthOf(3);
+            expect(body.message.wordsArray).to.be.an.instanceof(Array);
+            body.message.wordsArray.forEach((word) => {
+              expect(word.item).to.be.a("string");
+            });
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 200. Word given is in the wrong language", (done) => {
+        request(app)
+          .post("/api/associations")
+          .send({
+            text: "Käse",
+            lang: "en",
+            filter: "",
+          })
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.message.wordsArray).to.have.lengthOf(0);
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status :400. Missing text property", (done) => {
+        request(app)
+          .post("/api/associations")
+          .send({
+            lang: "en",
+            filter: "",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language and input text."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status :400. Missing lang property", (done) => {
+        request(app)
+          .post("/api/associations")
+          .send({
+            text: "house",
+            filter: "",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language and input text."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status :400. text property is empty string", (done) => {
+        request(app)
+          .post("/api/associations")
+          .send({
+            text: "",
+            lang: "en",
+            filter: "",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language and input text."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status :400. lang property is empty string", (done) => {
+        request(app)
+          .post("/api/associations")
+          .send({
+            text: "house",
+            lang: "",
+            filter: "",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language and input text."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 400. filter isn't valid", (done) => {
+        request(app)
+          .post("/api/associations")
+          .send({
+            text: "chair",
+            lang: "en",
+            filter: "womble",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Filter must equal noun, adjective, verb or adverb"
+            );
+
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status: 400. filter isn't a string", (done) => {
+        request(app)
+          .post("/api/associations")
+          .send({
+            text: "chair",
+            lang: "en",
+            filter: 123,
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Filter must equal noun, adjective, verb or adverb"
+            );
+
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("INVALID METHODS", () => {
+        const invalidMethods = ["patch", "get", "put", "delete"];
+        const requests = invalidMethods.map((method) => {
+          return request(app)
+            [method]("/api/associations")
+            .expect(405)
+            .then(({ body: { message } }) => {
+              expect(message).to.equal("method not allowed");
+            });
+        });
+        return Promise.all(requests);
+      });
+    });
+  });
+
+  describe("/game", () => {
+    describe("tests that the route for game responds with associated words and original word", () => {
+      after((done) => {
+        server.close();
+        done();
+      });
+
+      it("responds with an array of 4 words", (done) => {
+        request(app)
+          .post("/api/associations/game")
+          .send({
+            text: "house",
+            lang: "en",
+          })
+          .expect(200)
+          .then(({ body }) => {
+            expect(body).to.contain.property("message");
+            expect(body.message).to.have.all.keys("word", "wordsArray");
+            expect(body.message.word).to.deep.equal("house");
+            expect(body.message.wordsArray).to.have.lengthOf(4);
+            expect(body.message.wordsArray).to.be.an.instanceof(Array);
+            body.message.wordsArray.forEach((word) => {
+              expect(word).to.be.a("string");
+            });
+            expect(body.message.wordsArray.includes("House")).to.deep.equal(
+              true
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status :400. Missing text property", (done) => {
+        request(app)
+          .post("/api/associations/game")
+          .send({
+            lang: "en",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language and input text."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status :400. Missing lang property", (done) => {
+        request(app)
+          .post("/api/associations/game")
+          .send({
+            text: "house",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language and input text."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status :400. text property is empty string", (done) => {
+        request(app)
+          .post("/api/associations/game")
+          .send({
+            text: "",
+            lang: "en",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language and input text."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("status :400. lang property is empty string", (done) => {
+        request(app)
+          .post("/api/associations/game")
+          .send({
+            text: "house",
+            lang: "",
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.message).to.deep.equal(
+              "Must have a valid language and input text."
+            );
+            done();
+          })
+          .catch((err) => done(err));
+      });
+
+      it("INVALID METHODS", () => {
+        const invalidMethods = ["patch", "get", "put", "delete"];
+        const requests = invalidMethods.map((method) => {
+          return request(app)
+            [method]("/api/associations/game")
+            .expect(405)
+            .then(({ body: { message } }) => {
+              expect(message).to.equal("method not allowed");
+            });
+        });
+        return Promise.all(requests);
+      });
     });
   });
 });
