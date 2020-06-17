@@ -71,12 +71,12 @@ exports.associationsWordGame = (req, res, next) => {
   fetchAssociatedWords(apiKeyFixed, text, lang)
     .then(({ data: { response } }) => {
       const wordsArray = response[0].items.slice(0, 3);
-      const associatedWord = response[0].text;
+      const associatedWord = response[0].text.slice(0, 3);
       const capitalised =
         associatedWord.charAt(0).toUpperCase() + associatedWord.slice(1);
 
       const justWords = wordsArray.map((wordObj) => {
-        return `the ${wordObj.item}`;
+        return wordObj.item;
       });
 
       const randomIndex = Math.floor(Math.random() * justWords.length);
