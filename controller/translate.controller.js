@@ -76,7 +76,7 @@ exports.associationsWordGame = (req, res, next) => {
         associatedWord.charAt(0).toUpperCase() + associatedWord.slice(1);
 
       const justWords = wordsArray.map((wordObj) => {
-        return wordObj.item;
+        return `the ${wordObj.item}`;
       });
 
       const randomIndex = Math.floor(Math.random() * justWords.length);
