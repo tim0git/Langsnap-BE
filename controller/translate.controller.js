@@ -69,7 +69,7 @@ exports.associationsWordGame = (req, res, next) => {
   fetchAssociatedWords(apiKeyFixed, text, lang)
     .then(({ data: { response } }) => {
       const wordsArray = response[0].items.slice(0, 3);
-      const associatedWord = response[0].text.slice(3, text.length + 1);
+      const associatedWord = response[0].text;
       const capitalised =
         associatedWord.charAt(0).toUpperCase() + associatedWord.slice(1);
 
