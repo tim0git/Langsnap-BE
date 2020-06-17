@@ -13,7 +13,7 @@ exports.handleFirebase_Error = (err, req, res, next) => {
   const codes = {
     "auth/wrong-password": {
       status: 400,
-      message: "The password must be 6 characters long or more.",
+      message: "Please provide the correct email and password to log in.",
     },
     "auth/weak-password": {
       status: 400,
