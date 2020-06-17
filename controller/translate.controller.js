@@ -6,9 +6,7 @@ const {
 exports.translateWord = (req, res, next) => {
   const { word, langpair } = req.body;
   const valid = /^[a-zA-Z\s]*$/;
-
   if (!valid.test(word)) return next({ status: 400, message: "Invalid word." });
-
   fetchTranslatedWords(word, langpair).then(({ data }) => {
     const { translatedText } = data.responseData;
 
@@ -71,7 +69,7 @@ exports.associationsWordGame = (req, res, next) => {
   fetchAssociatedWords(apiKeyFixed, text, lang)
     .then(({ data: { response } }) => {
       const wordsArray = response[0].items.slice(0, 3);
-      const associatedWord = response[0].text.slice(0, 3);
+      const associatedWord = response[0].text.slice(3, text.length + 1);
       const capitalised =
         associatedWord.charAt(0).toUpperCase() + associatedWord.slice(1);
 
