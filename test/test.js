@@ -74,7 +74,7 @@ describe("POST /api/auth", () => {
             expect(body.message).to.be.a("string");
             expect(body).to.contain.property("message");
             expect(body.message).to.deep.equal(
-              "The password must be 6 characters long or more."
+              'Please provide the correct email and password to log in.'
             );
           });
       });
@@ -108,7 +108,7 @@ describe("POST /api/auth", () => {
           .expect(400)
           .then(({ body }) => {
             expect(body.message).to.deep.equal(
-              "The password must be 6 characters long or more."
+              'The password must be 6 characters long or more.'
             );
             done();
           })
