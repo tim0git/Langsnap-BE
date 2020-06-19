@@ -75,9 +75,9 @@ exports.handleTranslateError = (err, req, res, next) => {
 };
 
 exports.handleCustomError = (err, req, res, next) => {
-  if (err.status) {
-    // console.log("handled custom error");
-    res.status(err.status).send({ message: err.message });
+  const { status, message } = err; // destrcutered status and message off err...
+  if (status) {
+    res.status(status).send({ message: message });
   } else {
     console.log("passed next custom error");
     next(err);
@@ -85,6 +85,5 @@ exports.handleCustomError = (err, req, res, next) => {
 };
 
 exports.handleInternalError = (err, req, res, next) => {
-  console.log(err);
   res.status(500).send({ msg: "Internal server error" });
 };

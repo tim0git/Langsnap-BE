@@ -3,7 +3,6 @@ const { wordsRouter } = require("./words.router");
 const { createNewUser } = require("../controller/user.controller");
 const { handle405s } = require("../error/errorHandling");
 
-//signIn user
 userRouter.route("/").post(createNewUser).all(handle405s);
 userRouter.use("/words", wordsRouter);
 

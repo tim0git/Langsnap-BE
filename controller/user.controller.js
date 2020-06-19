@@ -11,17 +11,18 @@ exports.createNewUser = async (req, res, next) => {
   let regex = /^\S+@\S+$/;
 
   if (!name) return next({ status: 400, message: "Name required." });
+  // moved email err above password, more semantic
+  if (!regex.test(email))
+    return next({
+      status: 400,
+      message: "The email address is badly formatted.",
+    });
   if (!password)
     return next({
       status: 400,
       message: "The password must be 6 characters long or more.",
     });
 
-  if (!regex.test(email))
-    return next({
-      status: 400,
-      message: "The email address is badly formatted.",
-    });
   try {
     const userNew = await createUser(email, password);
 
@@ -35,7 +36,8 @@ exports.createNewUser = async (req, res, next) => {
     };
     await createUserDB(newUser, uid);
     res.status(201).send({ token: token, user: newUser });
-  } catch ({ code, message }) {
+  } catch (err) {
+    const { code, message } = err; //destructured from the err object in a constant rather than in a function
     next({ code: code, message: message });
   }
 };
@@ -59,7 +61,8 @@ exports.saveWordsToUserID = async (req, res, next) => {
     const wordsList = await saveWordToUserDB(uid, newWord);
 
     res.status(200).send({ wordsList: wordsList });
-  } catch ({ code, message }) {
+  } catch (err) {
+    const { code, message } = err; //destructured from the err object in a constant rather than in a function
     next({ code: code, message: message });
   }
 };

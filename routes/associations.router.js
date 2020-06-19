@@ -6,7 +6,6 @@ const {
 
 const { handle405s } = require("../error/errorHandling");
 
-//get word associations
 associationsRouter.route("/").post(associationsWord).all(handle405s);
 associationsRouter.route("/game").post(associationsWordGame).all(handle405s);
 

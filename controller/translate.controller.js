@@ -50,7 +50,10 @@ exports.associationsWord = (req, res, next) => {
         message: { word: associatedWord, wordsArray: wordsArray },
       });
     })
-    .catch(({ response: { status, statusText } }) => {
+    .catch((err) => {
+      const {
+        response: { status, statusText },
+      } = err; //destructured from the err object in a constant rather than in a function
       next({ status: status, message: statusText });
     });
 };
@@ -85,7 +88,10 @@ exports.associationsWordGame = (req, res, next) => {
         message: { word: associatedWord, wordsArray: justWords },
       });
     })
-    .catch(({ response: { status, statusText } }) => {
+    .catch((err) => {
+      const {
+        response: { status, statusText },
+      } = err; //destructured from the err object in a constant rather than in a function
       next({ status: status, message: statusText });
     });
 };
