@@ -6,14 +6,10 @@ This api can be used for Firebase authentication as well as posting translations
 ​
 Check out the hosted API [here](https://langsnap-be.herokuapp.com/api)
 ​
----
-​
 ## Tests
 ​
 The tests for this api have been designed with `mocha` and `chai`.
-​
----
-​
+​​
 ## Endpoints
 ​
 ```http
@@ -30,17 +26,13 @@ POST /api/associations
 POST /api/associations/game
 ```
 ​
----
-​
 ## Author
 ​
 - Alex Carrie - [github](https://github.com/acarriedev/)
 - Ethan Moss - [github](https://github.com/ethanm2001/)
 - Petru Stanescu - [github](https://github.com/petrus92/)
 - Tim Doolan - [github](https://github.com/tim0git/)
-​
----
-​
+​​
 ### Acknowledgments
-​
-- Built as a project for the Northcoders Developer Pathway. [Northcoders](https://northcoders.com/)
+
+​- Built as a project for the Northcoders Developer Pathway. [Northcoders](https://northcoders.com/)
